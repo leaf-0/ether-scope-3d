@@ -1,3 +1,4 @@
+
 import { useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
@@ -87,7 +88,7 @@ const EdgeObject = ({
   end: THREE.Vector3; 
   value: string; 
 }) => {
-  // Changed to THREE.LineSegments to fix type error
+  // Fixed: Changed ref type to work with THREE.Line
   const ref = useRef<THREE.Line>(null);
   
   useFrame(({ clock }) => {

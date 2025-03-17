@@ -1,293 +1,248 @@
-import { useState, useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams, Link } from 'react-router-dom';
-import { AppDispatch, RootState } from '@/store';
-import { fetchWalletDetails } from '@/store/slices/walletSlice';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Wallet as WalletIcon, 
-  ArrowLeft,
-  Download,
-  AlertTriangle,
-  ExternalLink
-} from 'lucide-react';
-import Navbar from '@/components/layout/Navbar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
+import { ChevronLeft, AlertCircle, Download, ChevronUp, ChevronDown } from 'lucide-react';
+import { RootState } from '@/store';
+import { fetchWalletDetails } from '@/store/slices/walletSlice';
 import WalletCard from '@/components/wallet/WalletCard';
 import RiskGauge from '@/components/wallet/RiskGauge';
-import { generateReport } from '@/lib/api';
-import { useToast } from '@/components/ui/use-toast';
+import TransactionTable from '@/components/transactions/TransactionTable';
 
 const WalletAnalysis = () => {
   const { address } = useParams<{ address: string }>();
-  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { toast } = useToast();
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showRiskDetails, setShowRiskDetails] = useState(false);
   
   const { 
-    address: walletAddress,
-    balance,
+    walletDetails, 
     transactions,
-    firstSeen,
-    riskScore,
-    tags,
-    recentTransactions,
-    isLoading,
-    error
+    riskFactors,
+    isLoading, 
+    error 
   } = useSelector((state: RootState) => state.wallet);
   
   useEffect(() => {
     if (address) {
-      dispatch(fetchWalletDetails(address));
+      // TypeScript safe dispatch with AppDispatch
+      dispatch(fetchWalletDetails(address) as any);
     }
-  }, [dispatch, address]);
+  }, [address, dispatch]);
   
-  const handleGenerateReport = async () => {
-    if (!address) return;
-    
-    setIsGeneratingReport(true);
-    
-    try {
-      // Simulate API call for development
-      //await generateReport(address);
-      
-      toast({
-        title: "Report Generated",
-        description: "The wallet analysis report has been successfully generated."
-      });
-      
-      // Simulate download
-      setTimeout(() => {
-        const link = document.createElement('a');
-        link.href = '#';
-        link.setAttribute('download', `wallet-report-${address.substring(0, 8)}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }, 1000);
-    } catch (error) {
-      toast({
-        title: "Report Generation Failed",
-        description: "There was an error generating the report. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGeneratingReport(false);
-    }
+  const handleBack = () => {
+    navigate(-1);
   };
   
-  // Format transaction timestamp
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+  const handleDownloadReport = () => {
+    // In a real implementation, this would call the backend API to generate and download a report
+    toast({
+      title: 'Generating report',
+      description: 'Your wallet analysis report is being generated and will download shortly.',
+    });
   };
   
-  // Truncate address
-  const truncateAddress = (addr: string) => {
-    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
-  };
+  // Mock transactions for demonstration
+  const mockTransactions = [
+    {
+      hash: '0x8a008b8dbbc1d1e8e96e9d0b3fcb7648addf836a1f3c3bf0f9cc3bee3d1cf688',
+      from: address || '0x0000000000000000000000000000000000000000',
+      to: '0x7a16ff8270133f063aab6c9977183d9e72835428',
+      value: '5.2',
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      hash: '0x9723bcd079f487bcad3a50366b28c13f6d923683dc192657227f6c7bb88568f2',
+      from: '0x2d7b6c95afeffa50c068867fa6e77f990efa4503',
+      to: address || '0x0000000000000000000000000000000000000000',
+      value: '12.8',
+      timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      hash: '0x1ab341b6b8c346d1f36d803e9dc078497d8ae6c47f5080654bc7b2e8ea75f91a',
+      from: address || '0x0000000000000000000000000000000000000000',
+      to: '0xb4d3c5c50f82eda8921d57bffc8febf9111c3ae3',
+      value: '0.15',
+      timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ];
+  
+  // Mock risk factors
+  const mockRiskFactors = [
+    { 
+      name: 'Mixing Service Interaction',
+      description: 'Transactions with known cryptocurrency mixing services detected',
+      score: 75,
+      impact: 'high'
+    },
+    { 
+      name: 'Age of Wallet',
+      description: 'Wallet was created less than 30 days ago',
+      score: 60,
+      impact: 'medium'
+    },
+    { 
+      name: 'Transaction Patterns',
+      description: 'Unusual transaction frequency and amounts',
+      score: 45,
+      impact: 'medium'
+    },
+  ];
   
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-dark">
-        <Navbar />
-        <div className="container mx-auto pt-24 pb-12 px-4">
-          <div className="flex justify-center items-center h-64">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-neon-blue border-r-transparent"></div>
-            <span className="ml-3 text-gray-400">Loading wallet data...</span>
-          </div>
+      <div className="container max-w-7xl mx-auto py-6 flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-neon-blue border-r-transparent align-[-0.125em]"></div>
+          <p className="mt-2 text-gray-400">Loading wallet analysis...</p>
         </div>
       </div>
     );
   }
   
-  if (error || !walletAddress) {
+  if (error) {
     return (
-      <div className="min-h-screen bg-dark">
-        <Navbar />
-        <div className="container mx-auto pt-24 pb-12 px-4">
-          <div className="flex flex-col justify-center items-center h-64">
-            <AlertTriangle className="h-12 w-12 text-amber-400 mb-4" />
-            <h2 className="text-xl text-white mb-2">Error Loading Wallet</h2>
-            <p className="text-gray-400 mb-4">{error || "Wallet address not found or invalid"}</p>
-            <Link to="/">
-              <Button>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </Link>
-          </div>
-        </div>
+      <div className="container max-w-7xl mx-auto py-6">
+        <Button variant="ghost" onClick={handleBack} className="mb-4">
+          <ChevronLeft className="mr-2 h-4 w-4" /> Back
+        </Button>
+        
+        <Card className="glass">
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              <p>Error loading wallet details: {error}</p>
+            </div>
+            <Button variant="default" onClick={() => window.location.reload()} className="mt-4">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
   
   return (
-    <div className="min-h-screen bg-dark">
-      <Navbar />
-      
-      <main className="container mx-auto pt-24 pb-12 px-4">
-        <div className="mb-8 flex items-center">
-          <Link to="/">
-            <Button variant="ghost" size="icon" className="mr-4">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-white">
-              <span className="mr-3">Wallet Analysis</span>
-            </h1>
-            <div className="text-gray-400 font-mono mt-1">
-              {address}
-            </div>
-          </div>
-          
-          <Button 
-            onClick={handleGenerateReport} 
-            disabled={isGeneratingReport} 
-            className="neon-border"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Generate Report
+    <div className="container max-w-7xl mx-auto py-6 space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" size="icon" onClick={handleBack}>
+            <ChevronLeft className="h-5 w-5" />
           </Button>
+          <h1 className="text-2xl font-bold text-white">Wallet Analysis</h1>
+        </div>
+        <Button variant="default" size="sm" onClick={handleDownloadReport}>
+          <Download className="h-4 w-4 mr-2" />
+          Download Report
+        </Button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-1">
+          <WalletCard 
+            address={address || '0x0000000000000000000000000000000000000000'}
+            balance={walletDetails?.balance || '0.00'}
+            riskScore={walletDetails?.riskScore || 50}
+            tags={walletDetails?.tags || ['Exchange?', 'New Wallet']}
+            firstSeen={walletDetails?.firstSeen}
+          />
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Wallet Info & Risk */}
-          <div className="space-y-6 animate-fade-in opacity-0" style={{ animationDelay: '0.1s' }}>
-            <WalletCard 
-              address={walletAddress}
-              balance={balance}
-              riskScore={riskScore}
-              tags={tags}
-              firstSeen={firstSeen}
-            />
-            
-            <Card className="glass border border-white/10">
-              <CardHeader className="pb-2">
-                <CardTitle>Risk Assessment</CardTitle>
-                <CardDescription>Analysis of wallet risk factors</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-6">
-                  <RiskGauge score={riskScore} animated size="lg" />
-                </div>
+        <div className="md:col-span-2">
+          <Card className="glass">
+            <CardHeader className="pb-2">
+              <CardTitle>Risk Assessment</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <RiskGauge 
+                  score={walletDetails?.riskScore || 50} 
+                  size="lg" 
+                  animated={true} 
+                />
                 
-                <div className="space-y-4 mt-6">
-                  <div className="p-3 rounded-md bg-dark-lighter">
-                    <div className="text-xs text-gray-400 mb-1">Risk Factors</div>
-                    <div className="space-y-2">
-                      {riskScore > 60 && (
-                        <div className="text-sm text-amber-400 flex items-center">
-                          <AlertTriangle className="h-3 w-3 mr-1.5" />
-                          Transaction pattern indicates potential mixing
-                        </div>
-                      )}
-                      {riskScore > 40 && (
-                        <div className="text-sm text-amber-400 flex items-center">
-                          <AlertTriangle className="h-3 w-3 mr-1.5" />
-                          Connected to high-risk addresses
-                        </div>
-                      )}
-                      {riskScore < 40 && (
-                        <div className="text-sm text-gray-300">
-                          No significant risk factors detected
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Right Column - Transactions & Activity */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="glass border border-white/10 animate-fade-in opacity-0" style={{ animationDelay: '0.2s' }}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Transaction History</CardTitle>
-                    <CardDescription>Recent activity for this wallet</CardDescription>
-                  </div>
-                  <WalletIcon className="text-neon-blue h-5 w-5" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentTransactions.map((tx) => (
-                    <Link 
-                      key={tx.hash} 
-                      to={`/trace/${tx.hash}`}
-                      className="block hover:bg-white/5 rounded-lg p-3 transition-colors"
-                    >
-                      <div className="flex justify-between">
-                        <div className="font-mono text-sm text-gray-400">
-                          {tx.hash.substring(0, 10)}...{tx.hash.substring(tx.hash.length - 6)}
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <div className="text-sm text-white font-medium">
-                            {tx.value} ETH
+                <div className="pt-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowRiskDetails(!showRiskDetails)}
+                    className="w-full flex items-center justify-between text-xs"
+                  >
+                    <span>Risk Factor Details</span>
+                    {showRiskDetails ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </Button>
+                  
+                  {showRiskDetails && (
+                    <div className="mt-4 space-y-3">
+                      {mockRiskFactors.map((factor, index) => (
+                        <div key={index} className="border border-white/10 rounded-md p-3">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-sm font-medium">{factor.name}</h3>
+                            <span className={`
+                              text-xs px-2 py-0.5 rounded-md
+                              ${factor.impact === 'high' ? 'bg-red-500/20 text-red-400' :
+                                factor.impact === 'medium' ? 'bg-amber-500/20 text-amber-400' :
+                                'bg-green-500/20 text-green-400'}
+                            `}>
+                              {factor.impact.toUpperCase()}
+                            </span>
                           </div>
-                          <a href={`https://etherscan.io/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" 
-                            onClick={(e) => e.stopPropagation()}
-                            className="ml-2 text-gray-400 hover:text-white"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
+                          <p className="text-xs text-gray-400 mt-1">{factor.description}</p>
+                          <div className="mt-2 w-full bg-gray-800 rounded-full h-1.5">
+                            <div 
+                              className={`h-1.5 rounded-full ${
+                                factor.score > 70 ? 'bg-red-500' :
+                                factor.score > 40 ? 'bg-amber-500' :
+                                'bg-green-500'
+                              }`}
+                              style={{ width: `${factor.score}%` }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex justify-between mt-2">
-                        <div className="flex items-center text-sm">
-                          <span className={`${tx.from === address ? 'text-red-400' : 'text-gray-400'}`}>
-                            {tx.from === address ? 'OUT' : 'IN'}
-                          </span>
-                          <span className="mx-2 text-gray-500">
-                            {tx.from === address ? 'to' : 'from'}
-                          </span>
-                          <span className="font-mono text-gray-400">
-                            {truncateAddress(tx.from === address ? tx.to : tx.from)}
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {formatDate(tx.timestamp)}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="glass border border-white/10 animate-fade-in opacity-0" style={{ animationDelay: '0.3s' }}>
-              <CardHeader className="pb-2">
-                <CardTitle>Pattern Analysis</CardTitle>
-                <CardDescription>Detected transaction patterns</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[200px] flex items-center justify-center">
-                  {riskScore > 60 ? (
-                    <div className="text-center">
-                      <AlertTriangle className="h-12 w-12 text-amber-400 mx-auto mb-4" />
-                      <p className="text-white font-medium">Suspicious transaction patterns detected</p>
-                      <p className="text-gray-400 text-sm mt-2">This wallet shows signs of transaction layering</p>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <div className="h-12 w-12 rounded-full bg-neon-green/20 text-neon-green flex items-center justify-center mx-auto mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                      </div>
-                      <p className="text-white font-medium">No suspicious patterns detected</p>
-                      <p className="text-gray-400 text-sm mt-2">This wallet shows normal transaction behavior</p>
+                      ))}
                     </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </main>
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="overview">Transaction History</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview" className="space-y-4">
+          <TransactionTable 
+            transactions={transactions.length > 0 ? transactions : mockTransactions}
+            title="Transaction History"
+          />
+        </TabsContent>
+        
+        <TabsContent value="analytics">
+          <Card className="glass">
+            <CardHeader>
+              <CardTitle>Wallet Analytics</CardTitle>
+            </CardHeader>
+            <CardContent className="h-64 flex items-center justify-center">
+              <p className="text-gray-400">Analytics charts will appear here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -7,8 +7,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store";
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import WalletAnalysis from "./pages/WalletAnalysis";
+import TraceView from "./pages/TraceView";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +23,9 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/wallet/:address" element={<WalletAnalysis />} />
+            <Route path="/trace/:hash" element={<TraceView />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

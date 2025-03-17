@@ -119,3 +119,57 @@ body {
 .bg-neon-green {
   @apply bg-[#4CFF4C];
 }
+
+.shadow-neon-blue {
+  --tw-shadow-color: #00d4ff;
+}
+
+.text-risk-high {
+  @apply text-rose-500;
+}
+
+.border-risk-high {
+  @apply border-rose-500;
+}
+
+.border-neon-green {
+  @apply border-[#4CFF4C];
+}
+
+/* Responsive fixes */
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
+  }
+}
+
+/* Animation for nodes in the transaction graph */
+@keyframes pulse {
+  0% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0.5; transform: scale(1); }
+}
+
+.node-pulse {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+/* Styling for scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(30, 30, 45, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(76, 76, 100, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(76, 76, 100, 0.8);
+}
