@@ -5,10 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { ExternalLink, ChevronsRight, AlertTriangle } from 'lucide-react';
+import { ExternalLink, ChevronsRight, AlertTriangle, FileSearch, Wallet } from 'lucide-react';
 import StatsCard from '@/components/dashboard/StatsCard';
 import Globe from '@/components/dashboard/Globe';
 import { useWebSocket } from '@/lib/websocket';
+import { formatTimeAgo, formatAddress } from '@/lib/formatters';
+import { useAppDispatch } from '@/store';
 
 interface Activity {
   id: string;
@@ -20,11 +22,42 @@ interface Activity {
   severity?: 'low' | 'medium' | 'high';
 }
 
+interface IpLocation {
+  lat: number;
+  lon: number;
+  address: string;
+  size: number;
+  intensity: number;
+}
+
+interface FlowData {
+  from: {
+    lat: number;
+    lon: number;
+    address: string;
+  };
+  to: {
+    lat: number;
+    lon: number;
+    address: string;
+  };
+  value: number;
+  risk: number;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState('overview');
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [ipLocations, setIpLocations] = useState<IpLocation[]>([]);
+  const [flows, setFlows] = useState<FlowData[]>([]);
+  const [stats, setStats] = useState({
+    monitoredWallets: 1254,
+    suspiciousFlows: 48,
+    activeInvestigations: 23
+  });
   
   // Connect to WebSocket for real-time updates
   const socket = useWebSocket({
@@ -51,6 +84,7 @@ const Dashboard = () => {
 
   // Mock data for testing
   useEffect(() => {
+    // Initial activities
     const mockActivities: Activity[] = [
       {
         id: '1',
@@ -80,26 +114,120 @@ const Dashboard = () => {
     ];
     
     setActivities(mockActivities);
-  }, []);
+    
+    // Mock IP location data for the globe
+    const mockLocations = Array.from({ length: 25 }, () => ({
+      lat: (Math.random() * 180) - 90,
+      lon: (Math.random() * 360) - 180,
+      address: `0x${Math.random().toString(16).substr(2, 40)}`,
+      size: Math.random() * 0.1 + 0.05,
+      intensity: Math.random()
+    }));
+    
+    setIpLocations(mockLocations);
+    
+    // Mock flows data for the globe
+    const mockFlows = Array.from({ length: 15 }, () => {
+      const fromIndex = Math.floor(Math.random() * mockLocations.length);
+      let toIndex = Math.floor(Math.random() * mockLocations.length);
+      
+      // Make sure from and to are different
+      while (toIndex === fromIndex) {
+        toIndex = Math.floor(Math.random() * mockLocations.length);
+      }
+      
+      return {
+        from: {
+          lat: mockLocations[fromIndex].lat,
+          lon: mockLocations[fromIndex].lon,
+          address: mockLocations[fromIndex].address
+        },
+        to: {
+          lat: mockLocations[toIndex].lat,
+          lon: mockLocations[toIndex].lon,
+          address: mockLocations[toIndex].address
+        },
+        value: Math.random(),
+        risk: Math.random() * 100
+      };
+    });
+    
+    setFlows(mockFlows);
+    
+    // Simulate real-time data updates
+    const interval = setInterval(() => {
+      // Randomly update stats
+      setStats(prev => ({
+        monitoredWallets: prev.monitoredWallets + (Math.random() > 0.7 ? 1 : 0),
+        suspiciousFlows: prev.suspiciousFlows + (Math.random() > 0.8 ? 1 : 0),
+        activeInvestigations: prev.activeInvestigations + (Math.random() > 0.9 ? 1 : 0)
+      }));
+      
+      // Add new random activity
+      if (Math.random() > 0.7) {
+        const types = ['transaction', 'alert', 'wallet'] as const;
+        const type = types[Math.floor(Math.random() * types.length)];
+        const severity = Math.random() > 0.7 ? (Math.random() > 0.5 ? 'high' : 'medium') : 'low';
+        
+        const newActivity: Activity = {
+          id: Date.now().toString(),
+          type,
+          title: type === 'transaction' 
+            ? 'New Transaction Detected' 
+            : type === 'alert' 
+              ? 'Suspicious Activity Alert' 
+              : 'Wallet Update',
+          description: type === 'transaction'
+            ? `${(Math.random() * 100).toFixed(2)} ETH transferred between wallets`
+            : type === 'alert'
+              ? 'Unusual transaction pattern identified'
+              : 'New wallet added to monitoring list',
+          address: `0x${Math.random().toString(16).substr(2, 40)}`,
+          timestamp: new Date(),
+          severity: type === 'alert' ? severity as 'low' | 'medium' | 'high' : undefined
+        };
+        
+        setActivities(prev => [newActivity, ...prev.slice(0, 19)]);
+        
+        if (type === 'alert' && severity === 'high') {
+          toast({
+            title: 'High Risk Activity Detected',
+            description: newActivity.description,
+            variant: 'destructive',
+          });
+        }
+      }
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [toast]);
 
-  const formatTimeAgo = (date: Date) => {
-    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    
-    if (seconds < 60) return `${seconds}s ago`;
-    
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  };
-
-  const truncateAddress = (address: string) => {
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-  };
+  // Convert IP locations to globe format
+  const globeLocations = ipLocations.map(loc => ({
+    lat: loc.lat,
+    lon: loc.lon,
+    size: loc.size,
+    intensity: loc.intensity,
+    color: Math.random() > 0.3 ? '#9b87f5' : '#00ffff'
+  }));
+  
+  // Convert flows to globe format
+  const globeFlows = flows.map(flow => ({
+    from: {
+      lat: flow.from.lat,
+      lon: flow.from.lon,
+      size: 0.05,
+      intensity: 0.8
+    },
+    to: {
+      lat: flow.to.lat,
+      lon: flow.to.lon,
+      size: 0.05,
+      intensity: 0.8
+    },
+    value: flow.value,
+    color: flow.risk > 70 ? '#ff00ff' : flow.risk > 40 ? '#ffff00' : '#00ffff'
+  }));
 
   return (
     <div className="container max-w-7xl mx-auto py-6 space-y-6 animate-fade-in">
@@ -111,7 +239,13 @@ const Dashboard = () => {
               <CardDescription>Real-time visualization of blockchain activity</CardDescription>
             </CardHeader>
             <CardContent className="p-0 h-[300px]">
-              <Globe />
+              <Globe 
+                size={2}
+                color="#1e1e45"
+                wireframe={false}
+                locations={globeLocations}
+                flows={globeFlows}
+              />
             </CardContent>
           </Card>
         </div>
@@ -119,28 +253,28 @@ const Dashboard = () => {
         <div className="space-y-6">
           <StatsCard 
             title="Monitored Wallets" 
-            value={1254} 
+            value={stats.monitoredWallets} 
             change={12}
             trend="up"
-            icon="Wallet"
+            icon={<Wallet className="h-6 w-6" />}
             color="blue"
           />
           
           <StatsCard 
             title="Suspicious Flows" 
-            value={48} 
+            value={stats.suspiciousFlows} 
             change={7}
             trend="up"
-            icon="AlertTriangle"
+            icon={<AlertTriangle className="h-6 w-6" />}
             color="amber"
           />
           
           <StatsCard 
             title="Active Investigations" 
-            value={23} 
+            value={stats.activeInvestigations} 
             change={-3}
             trend="down"
-            icon="FileSearch"
+            icon={<FileSearch className="h-6 w-6" />}
             color="green"
           />
         </div>
@@ -179,7 +313,7 @@ const Dashboard = () => {
                     }`}>
                       {activity.type === 'alert' && <AlertTriangle className="h-5 w-5 text-red-400" />}
                       {activity.type === 'transaction' && <ExternalLink className="h-5 w-5 text-blue-400" />}
-                      {activity.type === 'wallet' && <ExternalLink className="h-5 w-5 text-green-400" />}
+                      {activity.type === 'wallet' && <Wallet className="h-5 w-5 text-green-400" />}
                     </div>
                     
                     <div className="flex-1 min-w-0">
@@ -191,7 +325,7 @@ const Dashboard = () => {
                       </div>
                       <p className="text-xs text-gray-400 mt-1">{activity.description}</p>
                       <div className="flex items-center mt-1">
-                        <span className="text-xs font-mono text-gray-500">{truncateAddress(activity.address)}</span>
+                        <span className="text-xs font-mono text-gray-500">{formatAddress(activity.address)}</span>
                         {activity.severity === 'high' && (
                           <span className="ml-2 px-1.5 py-0.5 rounded-sm text-[10px] bg-red-900/20 text-red-400">
                             HIGH RISK

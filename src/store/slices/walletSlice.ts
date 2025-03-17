@@ -28,6 +28,15 @@ interface WalletDetails {
   tags: string[];
 }
 
+interface IpLocation {
+  ip: string;
+  country: string;
+  city: string;
+  lat: number;
+  lon: number;
+  lastActive: string;
+}
+
 interface WalletState {
   address: string;
   balance: string;
@@ -40,6 +49,7 @@ interface WalletState {
   error: string | null;
   walletDetails: WalletDetails | null;
   riskFactors: RiskFactor[];
+  ipLocations: IpLocation[];
 }
 
 const initialState: WalletState = {
@@ -53,7 +63,8 @@ const initialState: WalletState = {
   isLoading: false,
   error: null,
   walletDetails: null,
-  riskFactors: []
+  riskFactors: [],
+  ipLocations: []
 };
 
 // Thunk for fetching wallet details
@@ -76,7 +87,10 @@ const walletSlice = createSlice({
   name: 'wallet',
   initialState,
   reducers: {
-    clearWalletData: () => initialState
+    clearWalletData: () => initialState,
+    updateIpLocations: (state, action: PayloadAction<IpLocation[]>) => {
+      state.ipLocations = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -102,6 +116,7 @@ const walletSlice = createSlice({
         state.tags = action.payload.tags || [];
         state.recentTransactions = action.payload.recentTransactions || [];
         state.riskFactors = action.payload.riskFactors || [];
+        state.ipLocations = action.payload.ipLocations || [];
       })
       .addCase(fetchWalletDetails.rejected, (state, action) => {
         state.isLoading = false;
@@ -110,5 +125,5 @@ const walletSlice = createSlice({
   }
 });
 
-export const { clearWalletData } = walletSlice.actions;
+export const { clearWalletData, updateIpLocations } = walletSlice.actions;
 export default walletSlice.reducer;

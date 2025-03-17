@@ -54,7 +54,7 @@
 }
 
 body {
-  @apply bg-dark text-white font-sans;
+  @apply bg-dark text-white font-sans overflow-x-hidden;
 }
 
 .glass {
@@ -63,11 +63,38 @@ body {
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
+.glass-card {
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.4), 
+              0 0 10px var(--tw-shadow-color), 
+              0 0 15px var(--tw-shadow-color);
+  transform: translateY(-5px);
+}
+
 .neon-border {
   box-shadow: 0 0 5px var(--tw-shadow-color), 
               0 0 10px var(--tw-shadow-color), 
               0 0 15px var(--tw-shadow-color);
   @apply shadow-neon-blue;
+}
+
+.neon-border-pink {
+  box-shadow: 0 0 5px var(--tw-shadow-color), 
+              0 0 10px var(--tw-shadow-color), 
+              0 0 15px var(--tw-shadow-color);
+  @apply shadow-neon-pink;
+}
+
+.neon-border-green {
+  box-shadow: 0 0 5px var(--tw-shadow-color), 
+              0 0 10px var(--tw-shadow-color), 
+              0 0 15px var(--tw-shadow-color);
+  @apply shadow-neon-green;
 }
 
 .animate-fade-in {
@@ -80,6 +107,10 @@ body {
 }
 
 /* Custom indicator colors for the Progress component */
+.indicator-custom {
+  --indicator-color: #00D4FF;
+}
+
 .indicator-custom::-webkit-progress-value {
   background: var(--indicator-color);
 }
@@ -90,6 +121,18 @@ body {
 
 .indicator-custom::-ms-fill {
   background: var(--indicator-color);
+}
+
+.indicator-high {
+  --indicator-color: #FF0044;
+}
+
+.indicator-medium {
+  --indicator-color: #FFD700;
+}
+
+.indicator-low {
+  --indicator-color: #4CFF4C;
 }
 
 .three-canvas canvas {
@@ -120,8 +163,36 @@ body {
   @apply bg-[#4CFF4C];
 }
 
+.text-neon-purple {
+  @apply text-[#9b87f5];
+}
+
+.bg-neon-purple {
+  @apply bg-[#9b87f5];
+}
+
+.text-neon-pink {
+  @apply text-[#FF00FF];
+}
+
+.bg-neon-pink {
+  @apply bg-[#FF00FF];
+}
+
 .shadow-neon-blue {
   --tw-shadow-color: #00d4ff;
+}
+
+.shadow-neon-pink {
+  --tw-shadow-color: #FF00FF;
+}
+
+.shadow-neon-green {
+  --tw-shadow-color: #4CFF4C;
+}
+
+.shadow-neon-purple {
+  --tw-shadow-color: #9b87f5;
 }
 
 .text-risk-high {
@@ -154,6 +225,42 @@ body {
   animation: pulse 2s infinite ease-in-out;
 }
 
+/* Animation for glowing effects */
+@keyframes glow {
+  0% { filter: drop-shadow(0 0 2px var(--glow-color)); }
+  50% { filter: drop-shadow(0 0 8px var(--glow-color)); }
+  100% { filter: drop-shadow(0 0 2px var(--glow-color)); }
+}
+
+.glow-blue {
+  --glow-color: rgba(0, 212, 255, 0.7);
+  animation: glow 4s infinite ease-in-out;
+}
+
+.glow-purple {
+  --glow-color: rgba(155, 135, 245, 0.7);
+  animation: glow 4s infinite ease-in-out;
+}
+
+.glow-pink {
+  --glow-color: rgba(255, 0, 255, 0.7);
+  animation: glow 4s infinite ease-in-out;
+}
+
+.glow-green {
+  --glow-color: rgba(76, 255, 76, 0.7);
+  animation: glow 4s infinite ease-in-out;
+}
+
+/* Hover effect for cards */
+.hover-scale {
+  transition: transform 0.3s ease-out;
+}
+
+.hover-scale:hover {
+  transform: scale(1.03);
+}
+
 /* Styling for scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
@@ -172,4 +279,58 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(76, 76, 100, 0.8);
+}
+
+/* Liquid card effect */
+.liquid-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-card::before,
+.liquid-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, 
+    rgba(0, 212, 255, 0.1) 0%, 
+    rgba(155, 135, 245, 0.1) 50%, 
+    rgba(255, 0, 255, 0.1) 100%);
+  transform: translateY(100%);
+  transition: transform 0.5s ease;
+}
+
+.liquid-card::after {
+  background: linear-gradient(45deg, 
+    rgba(255, 0, 255, 0.1) 0%, 
+    rgba(155, 135, 245, 0.1) 50%, 
+    rgba(0, 212, 255, 0.1) 100%);
+  transform: translateY(-100%);
+}
+
+.liquid-card:hover::before {
+  transform: translateY(50%) rotate(10deg);
+}
+
+.liquid-card:hover::after {
+  transform: translateY(-50%) rotate(-10deg);
+}
+
+/* Background patterns */
+.bg-grid {
+  background-image: 
+    linear-gradient(rgba(76, 76, 100, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(76, 76, 100, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-dots {
+  background-image: radial-gradient(rgba(76, 76, 100, 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-size: 150px;
+  opacity: 0.15;
 }
