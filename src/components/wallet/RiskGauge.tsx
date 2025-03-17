@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 interface RiskGaugeProps {
   score: number;
@@ -71,6 +72,7 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({
   };
   
   const styles = getSizeStyles();
+  const indicatorClass = getColor();
 
   return (
     <div className={`${className}`}>
@@ -92,8 +94,16 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({
         <Progress 
           value={progress} 
           max={100}
-          className={`${styles.height} bg-gray-800 ${animated ? 'transition-all duration-1000 ease-out' : ''}`}
-          indicatorClassName={`${getColor()} ${styles.height}`}
+          className={cn(
+            `${styles.height} bg-gray-800`,
+            animated ? 'transition-all duration-1000 ease-out' : '',
+            // Apply the custom indicator class via style prop and custom CSS
+            "indicator-custom"
+          )}
+          // Create a custom style tag to apply the indicator color
+          style={{"--indicator-color": indicatorClass.includes('from-green') ? 'var(--green)' : 
+                                      indicatorClass.includes('from-yellow') ? 'var(--amber)' : 
+                                      'var(--rose)'} as React.CSSProperties}
         />
         
         {/* Risk markers */}
