@@ -13,6 +13,16 @@ import WalletCard from '@/components/wallet/WalletCard';
 import RiskGauge from '@/components/wallet/RiskGauge';
 import TransactionTable from '@/components/transactions/TransactionTable';
 
+interface Transaction {
+  hash: string;
+  from: string;
+  to: string;
+  value: string;
+  timestamp: string;
+  gasUsed?: string;
+  status?: string;
+}
+
 const WalletAnalysis = () => {
   const { address } = useParams<{ address: string }>();
   const navigate = useNavigate();
@@ -21,13 +31,8 @@ const WalletAnalysis = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showRiskDetails, setShowRiskDetails] = useState(false);
   
-  const { 
-    walletDetails, 
-    transactions,
-    riskFactors,
-    isLoading, 
-    error 
-  } = useSelector((state: RootState) => state.wallet);
+  const walletState = useSelector((state: RootState) => state.wallet);
+  const { isLoading, error, transactions, walletDetails, riskFactors } = walletState;
   
   useEffect(() => {
     if (address) {
@@ -49,7 +54,7 @@ const WalletAnalysis = () => {
   };
   
   // Mock transactions for demonstration
-  const mockTransactions = [
+  const mockTransactions: Transaction[] = [
     {
       hash: '0x8a008b8dbbc1d1e8e96e9d0b3fcb7648addf836a1f3c3bf0f9cc3bee3d1cf688',
       from: address || '0x0000000000000000000000000000000000000000',
@@ -79,19 +84,19 @@ const WalletAnalysis = () => {
       name: 'Mixing Service Interaction',
       description: 'Transactions with known cryptocurrency mixing services detected',
       score: 75,
-      impact: 'high'
+      impact: 'high' as const
     },
     { 
       name: 'Age of Wallet',
       description: 'Wallet was created less than 30 days ago',
       score: 60,
-      impact: 'medium'
+      impact: 'medium' as const
     },
     { 
       name: 'Transaction Patterns',
       description: 'Unusual transaction frequency and amounts',
       score: 45,
-      impact: 'medium'
+      impact: 'medium' as const
     },
   ];
   
@@ -184,7 +189,7 @@ const WalletAnalysis = () => {
                   
                   {showRiskDetails && (
                     <div className="mt-4 space-y-3">
-                      {mockRiskFactors.map((factor, index) => (
+                      {(riskFactors?.length ? riskFactors : mockRiskFactors).map((factor, index) => (
                         <div key={index} className="border border-white/10 rounded-md p-3">
                           <div className="flex justify-between items-center">
                             <h3 className="text-sm font-medium">{factor.name}</h3>
@@ -227,7 +232,7 @@ const WalletAnalysis = () => {
         
         <TabsContent value="overview" className="space-y-4">
           <TransactionTable 
-            transactions={transactions.length > 0 ? transactions : mockTransactions}
+            transactions={transactions && transactions.length > 0 ? transactions : mockTransactions}
             title="Transaction History"
           />
         </TabsContent>

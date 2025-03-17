@@ -119,8 +119,8 @@ const Dashboard = () => {
         <div className="space-y-6">
           <StatsCard 
             title="Monitored Wallets" 
-            value="1,254" 
-            change="+12"
+            value={1254} 
+            change={12}
             trend="up"
             icon="Wallet"
             color="blue"
@@ -128,8 +128,8 @@ const Dashboard = () => {
           
           <StatsCard 
             title="Suspicious Flows" 
-            value="48" 
-            change="+7"
+            value={48} 
+            change={7}
             trend="up"
             icon="AlertTriangle"
             color="amber"
@@ -137,8 +137,8 @@ const Dashboard = () => {
           
           <StatsCard 
             title="Active Investigations" 
-            value="23" 
-            change="-3"
+            value={23} 
+            change={-3}
             trend="down"
             icon="FileSearch"
             color="green"

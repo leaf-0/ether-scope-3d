@@ -1,4 +1,104 @@
 
+import { useState, useEffect, useCallback } from 'react';
+
+interface WebSocketOptions {
+  url: string;
+  onOpen?: () => void;
+  onMessage?: (data: any) => void;
+  onClose?: () => void;
+  onError?: (error: Event) => void;
+  reconnect?: boolean;
+  reconnectAttempts?: number;
+  reconnectInterval?: number;
+}
+
+export const useWebSocket = ({
+  url,
+  onOpen,
+  onMessage,
+  onClose,
+  onError,
+  reconnect = true,
+  reconnectAttempts = 5,
+  reconnectInterval = 3000
+}: WebSocketOptions) => {
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+
+  const connect = useCallback(() => {
+    try {
+      const ws = new WebSocket(url);
+      
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        setIsConnected(true);
+        setAttempts(0);
+        if (onOpen) onOpen();
+      };
+      
+      ws.onmessage = (event) => {
+        if (onMessage) {
+          try {
+            const data = JSON.parse(event.data);
+            onMessage(data);
+          } catch (err) {
+            // If it's not JSON, pass the raw data
+            onMessage(event.data);
+          }
+        }
+      };
+      
+      ws.onclose = () => {
+        console.log('WebSocket disconnected');
+        setIsConnected(false);
+        if (onClose) onClose();
+        
+        // Attempt to reconnect if enabled
+        if (reconnect && attempts < reconnectAttempts) {
+          setTimeout(() => {
+            setAttempts(prev => prev + 1);
+            connect();
+          }, reconnectInterval);
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        if (onError) onError(error);
+      };
+      
+      setSocket(ws);
+      
+      return ws;
+    } catch (error) {
+      console.error('Failed to connect WebSocket:', error);
+      return null;
+    }
+  }, [url, onOpen, onMessage, onClose, onError, reconnect, reconnectAttempts, reconnectInterval, attempts]);
+  
+  useEffect(() => {
+    const ws = connect();
+    
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+    };
+  }, [connect]);
+  
+  const send = useCallback((data: any) => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(typeof data === 'string' ? data : JSON.stringify(data));
+      return true;
+    }
+    return false;
+  }, [socket]);
+  
+  return { isConnected, send };
+};
+
+// Legacy class for backward compatibility
 export class TransactionWebSocket {
   private socket: WebSocket | null = null;
   private url: string;

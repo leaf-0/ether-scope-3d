@@ -88,7 +88,7 @@ const EdgeObject = ({
   end: THREE.Vector3; 
   value: string; 
 }) => {
-  // Fixed: Changed ref type to work with THREE.Line
+  // Fixed ref type to properly match THREE.Line
   const ref = useRef<THREE.Line>(null);
   
   useFrame(({ clock }) => {

@@ -12,28 +12,48 @@ interface Transaction {
   status: string;
 }
 
-interface WalletState {
+interface RiskFactor {
+  name: string;
+  description: string;
+  score: number;
+  impact: 'high' | 'medium' | 'low';
+}
+
+interface WalletDetails {
   address: string;
   balance: string;
   transactions: number;
   firstSeen: string;
   riskScore: number;
   tags: string[];
+}
+
+interface WalletState {
+  address: string;
+  balance: string;
+  transactions: Transaction[];
+  firstSeen: string;
+  riskScore: number;
+  tags: string[];
   recentTransactions: Transaction[];
   isLoading: boolean;
   error: string | null;
+  walletDetails: WalletDetails | null;
+  riskFactors: RiskFactor[];
 }
 
 const initialState: WalletState = {
   address: '',
   balance: '0',
-  transactions: 0,
+  transactions: [],
   firstSeen: '',
   riskScore: 0,
   tags: [],
   recentTransactions: [],
   isLoading: false,
-  error: null
+  error: null,
+  walletDetails: null,
+  riskFactors: []
 };
 
 // Thunk for fetching wallet details
@@ -66,7 +86,22 @@ const walletSlice = createSlice({
       })
       .addCase(fetchWalletDetails.fulfilled, (state, action: PayloadAction<any>) => {
         state.isLoading = false;
-        return { ...state, ...action.payload };
+        state.walletDetails = {
+          address: action.payload.address || '',
+          balance: action.payload.balance || '0',
+          transactions: action.payload.transactions || 0,
+          firstSeen: action.payload.firstSeen || '',
+          riskScore: action.payload.riskScore || 0,
+          tags: action.payload.tags || []
+        };
+        state.address = action.payload.address || '';
+        state.balance = action.payload.balance || '0';
+        state.transactions = action.payload.recentTransactions || [];
+        state.firstSeen = action.payload.firstSeen || '';
+        state.riskScore = action.payload.riskScore || 0;
+        state.tags = action.payload.tags || [];
+        state.recentTransactions = action.payload.recentTransactions || [];
+        state.riskFactors = action.payload.riskFactors || [];
       })
       .addCase(fetchWalletDetails.rejected, (state, action) => {
         state.isLoading = false;

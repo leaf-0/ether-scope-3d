@@ -10,7 +10,7 @@ import { ChevronLeft, Search, Share, Download, Info } from 'lucide-react';
 import { RootState } from '@/store';
 import { fetchTransactionTrace, clearTraceData } from '@/store/slices/transactionSlice';
 import TransactionGraph from '@/components/transactions/TransactionGraph';
-import { useWebSocket } from '@/lib/websocket';
+import { useTraceWebSocket } from '@/hooks/useTraceWebSocket';
 
 const TraceView = () => {
   const { hash } = useParams<{ hash: string }>();
@@ -23,17 +23,16 @@ const TraceView = () => {
   );
 
   // Connect to WebSocket for real-time trace updates
-  const socket = useWebSocket({
+  const ws = useTraceWebSocket({
     url: `ws://localhost:5000/ws/trace/${hash}`,
-    onMessage: (data) => {
-      // Handle WebSocket messages
-      console.log('WebSocket message received:', data);
-    },
+    onOpen: () => {
+      console.log('Connected to trace WebSocket');
+    }
   });
 
   useEffect(() => {
     if (hash) {
-      dispatch(fetchTransactionTrace(hash));
+      dispatch(fetchTransactionTrace(hash) as any);
     }
 
     return () => {
