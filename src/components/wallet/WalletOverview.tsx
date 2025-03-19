@@ -64,7 +64,8 @@ const WalletOverview: React.FC<WalletOverviewProps> = ({ className }) => {
             <div>
               <h3 className="text-sm font-medium text-gray-400">Risk Assessment</h3>
               <div className="mt-2 h-32">
-                <RiskGauge score={riskScore} size={120} />
+                {/* Fix: Change size from number to "lg" to match the allowed prop types */}
+                <RiskGauge score={riskScore} size="lg" />
               </div>
             </div>
             
