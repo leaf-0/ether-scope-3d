@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,7 +9,7 @@ import StatsCard from '@/components/dashboard/StatsCard';
 import Globe from '@/components/dashboard/Globe';
 import { useWebSocket } from '@/lib/websocket';
 import { formatTimeAgo, formatAddress } from '@/lib/formatters';
-import { useAppDispatch } from '@/store';
+import { useAppDispatch } from '@/store/hooks';
 
 interface Activity {
   id: string;
@@ -59,7 +58,6 @@ const Dashboard = () => {
     activeInvestigations: 23
   });
   
-  // Connect to WebSocket for real-time updates
   const socket = useWebSocket({
     url: 'ws://localhost:5000/ws/activities',
     onMessage: (data) => {
@@ -82,9 +80,7 @@ const Dashboard = () => {
     },
   });
 
-  // Mock data for testing
   useEffect(() => {
-    // Initial activities
     const mockActivities: Activity[] = [
       {
         id: '1',
@@ -115,7 +111,6 @@ const Dashboard = () => {
     
     setActivities(mockActivities);
     
-    // Mock IP location data for the globe
     const mockLocations = Array.from({ length: 25 }, () => ({
       lat: (Math.random() * 180) - 90,
       lon: (Math.random() * 360) - 180,
@@ -126,12 +121,10 @@ const Dashboard = () => {
     
     setIpLocations(mockLocations);
     
-    // Mock flows data for the globe
     const mockFlows = Array.from({ length: 15 }, () => {
       const fromIndex = Math.floor(Math.random() * mockLocations.length);
       let toIndex = Math.floor(Math.random() * mockLocations.length);
       
-      // Make sure from and to are different
       while (toIndex === fromIndex) {
         toIndex = Math.floor(Math.random() * mockLocations.length);
       }
@@ -154,16 +147,13 @@ const Dashboard = () => {
     
     setFlows(mockFlows);
     
-    // Simulate real-time data updates
     const interval = setInterval(() => {
-      // Randomly update stats
       setStats(prev => ({
         monitoredWallets: prev.monitoredWallets + (Math.random() > 0.7 ? 1 : 0),
         suspiciousFlows: prev.suspiciousFlows + (Math.random() > 0.8 ? 1 : 0),
         activeInvestigations: prev.activeInvestigations + (Math.random() > 0.9 ? 1 : 0)
       }));
       
-      // Add new random activity
       if (Math.random() > 0.7) {
         const types = ['transaction', 'alert', 'wallet'] as const;
         const type = types[Math.floor(Math.random() * types.length)];
@@ -202,7 +192,6 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, [toast]);
 
-  // Convert IP locations to globe format
   const globeLocations = ipLocations.map(loc => ({
     lat: loc.lat,
     lon: loc.lon,
@@ -211,7 +200,6 @@ const Dashboard = () => {
     color: Math.random() > 0.3 ? '#9b87f5' : '#00ffff'
   }));
   
-  // Convert flows to globe format
   const globeFlows = flows.map(flow => ({
     from: {
       lat: flow.from.lat,

@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { getWalletDetails, getMockWalletDetails } from '../../lib/api';
 
-interface Transaction {
+export interface Transaction {
   hash: string;
   timestamp: string;
   value: string;
@@ -12,14 +12,14 @@ interface Transaction {
   status: string;
 }
 
-interface RiskFactor {
+export interface RiskFactor {
   name: string;
   description: string;
   score: number;
   impact: 'high' | 'medium' | 'low';
 }
 
-interface WalletDetails {
+export interface WalletDetails {
   address: string;
   balance: string;
   transactions: number;
@@ -28,7 +28,7 @@ interface WalletDetails {
   tags: string[];
 }
 
-interface IpLocation {
+export interface IpLocation {
   ip: string;
   country: string;
   city: string;

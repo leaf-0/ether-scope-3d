@@ -68,7 +68,7 @@ const AnimatedPoint = ({ point, radius }: { point: LocationPoint, radius: number
 const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
   const { from, to, value, color } = flow;
   const lineRef = useRef<THREE.Line>(null);
-  const materialRef = useRef<THREE.LineBasicMaterial>(null);
+  const materialRef = useRef<THREE.LineDashedMaterial>(null);
   
   // Convert lat/lon to 3D coordinates for 'from' point
   const fromPhi = (90 - from.lat) * (Math.PI / 180);
@@ -97,7 +97,6 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
     midPoint.normalize().multiplyScalar(radius + midElevation);
     
     // Create a quadratic curve
-    const curvePoints = [fromVec, midPoint, toVec];
     return new THREE.QuadraticBezierCurve3(fromVec, midPoint, toVec);
   }, [fromX, fromY, fromZ, toX, toY, toZ, radius, value]);
   
