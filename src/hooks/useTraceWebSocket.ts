@@ -1,92 +1,104 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { updateTraceFromWebSocket } from '@/store/slices/transactionSlice';
+import { updateNodes, updateEdges } from '@/store/slices/transactionSlice';
+import { toast } from '@/components/ui/use-toast';
 
-interface UseTraceWebSocketProps {
+interface WebSocketConfig {
   url: string;
-  enabled?: boolean;
   onOpen?: () => void;
+  onMessage?: (data: any) => void;
   onClose?: () => void;
-  onError?: (event: Event) => void;
+  onError?: (error: Event) => void;
+  retryCount?: number;
+  maxRetries?: number;
 }
 
 export const useTraceWebSocket = ({
   url,
-  enabled = true,
   onOpen,
+  onMessage,
   onClose,
-  onError
-}: UseTraceWebSocketProps) => {
+  onError,
+  retryCount = 0,
+  maxRetries = 3
+}: WebSocketConfig) => {
+  const ws = useRef<WebSocket | null>(null);
   const dispatch = useDispatch();
-  const [isConnected, setIsConnected] = useState(false);
-  const [error, setError] = useState<Event | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!enabled) return;
-
+    // Create WebSocket connection
     const connectWebSocket = () => {
-      // Close existing connection if any
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-
       try {
-        const ws = new WebSocket(url);
-        wsRef.current = ws;
+        const socket = new WebSocket(url);
+        ws.current = socket;
 
-        ws.onopen = () => {
-          console.log('WebSocket connection established');
-          setIsConnected(true);
-          setError(null);
+        socket.onopen = () => {
+          console.info('WebSocket connection established');
           if (onOpen) onOpen();
         };
 
-        ws.onmessage = (event) => {
+        socket.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            // Dispatch action to update Redux store with WebSocket data
-            dispatch(updateTraceFromWebSocket(data));
-          } catch (err) {
-            console.error('Error processing WebSocket message:', err);
+            
+            if (data.type === 'node_update') {
+              dispatch(updateNodes(data.nodes));
+            } else if (data.type === 'edge_update') {
+              dispatch(updateEdges(data.edges));
+            }
+            
+            if (onMessage) onMessage(data);
+          } catch (e) {
+            console.error('Error processing WebSocket message:', e);
           }
         };
 
-        ws.onclose = () => {
-          console.log('WebSocket connection closed');
-          setIsConnected(false);
+        socket.onclose = (event) => {
+          console.info('WebSocket connection closed');
           if (onClose) onClose();
+          
+          // Try to reconnect if not manually closed and haven't exceeded max retries
+          if (!event.wasClean && retryCount < maxRetries) {
+            const timeout = Math.min(1000 * Math.pow(2, retryCount), 10000);
+            reconnectTimeoutRef.current = window.setTimeout(() => {
+              useTraceWebSocket({
+                url,
+                onOpen,
+                onMessage,
+                onClose,
+                onError,
+                retryCount: retryCount + 1,
+                maxRetries
+              });
+            }, timeout);
+          }
         };
 
-        ws.onerror = (event) => {
-          console.error('WebSocket error:', event);
-          setError(event);
-          setIsConnected(false);
-          if (onError) onError(event);
+        socket.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          if (onError) onError(error);
         };
-      } catch (err) {
-        console.error('Error creating WebSocket connection:', err);
+      } catch (error) {
+        console.error('Error creating WebSocket:', error);
       }
     };
 
     connectWebSocket();
 
-    // Clean up the WebSocket connection when the component unmounts
+    // Clean up WebSocket connection
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      
+      if (ws.current) {
+        ws.current.close();
+        ws.current = null;
       }
     };
-  }, [url, enabled, dispatch, onOpen, onClose, onError]);
+  }, [url, retryCount]);
 
-  const send = (data: any) => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(data));
-    } else {
-      console.error('WebSocket is not connected, cannot send data');
-    }
-  };
-
-  return { isConnected, error, send };
+  return ws.current;
 };

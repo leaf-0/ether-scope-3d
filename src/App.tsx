@@ -11,8 +11,16 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import WalletAnalysis from "./pages/WalletAnalysis";
 import TraceView from "./pages/TraceView";
+import WebGLErrorBoundary from "./components/recovery/WebGLErrorBoundary";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false
+    }
+  }
+});
 
 const App = () => (
   <Provider store={store}>
@@ -20,16 +28,18 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/wallet/:address" element={<WalletAnalysis />} />
-            <Route path="/trace/:hash" element={<TraceView />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <WebGLErrorBoundary>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/wallet/:address" element={<WalletAnalysis />} />
+              <Route path="/trace/:hash" element={<TraceView />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </WebGLErrorBoundary>
       </TooltipProvider>
     </QueryClientProvider>
   </Provider>

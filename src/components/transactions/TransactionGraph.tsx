@@ -88,7 +88,6 @@ const EdgeObject = ({
   end: THREE.Vector3; 
   value: string; 
 }) => {
-  // Fix: Change ref type from SVGLineElement to THREE.Line
   const ref = useRef<THREE.Line>(null);
   
   useFrame(({ clock }) => {

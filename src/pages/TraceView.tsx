@@ -11,6 +11,7 @@ import { RootState } from '@/store';
 import { fetchTransactionTrace, clearTraceData } from '@/store/slices/transactionSlice';
 import TransactionGraph from '@/components/transactions/TransactionGraph';
 import { useTraceWebSocket } from '@/hooks/useTraceWebSocket';
+import WebGLErrorBoundary from '@/components/recovery/WebGLErrorBoundary';
 
 const TraceView = () => {
   const { hash } = useParams<{ hash: string }>();
@@ -27,6 +28,9 @@ const TraceView = () => {
     url: `ws://localhost:5000/ws/trace/${hash}`,
     onOpen: () => {
       console.log('Connected to trace WebSocket');
+    },
+    onError: (err) => {
+      console.log('WebSocket connection error, falling back to polling');
     }
   });
 
@@ -139,7 +143,9 @@ const TraceView = () => {
             
             <TabsContent value="graph" className="space-y-4">
               <div className="h-[600px]">
-                <TransactionGraph className="w-full h-full" />
+                <WebGLErrorBoundary>
+                  <TransactionGraph className="w-full h-full" />
+                </WebGLErrorBoundary>
               </div>
               
               {selectedNode && nodes.find(node => node.id === selectedNode) && (

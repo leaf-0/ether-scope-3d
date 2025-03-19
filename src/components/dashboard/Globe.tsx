@@ -67,7 +67,6 @@ const AnimatedPoint = ({ point, radius }: { point: LocationPoint, radius: number
 
 const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
   const { from, to, value, color } = flow;
-  // Fix: Change the ref type to THREE.Line instead of SVGLineElement
   const lineRef = useRef<THREE.Line>(null);
   const materialRef = useRef<THREE.LineDashedMaterial>(null);
   
@@ -108,7 +107,6 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
     if (materialRef.current) {
       const time = clock.getElapsedTime();
       materialRef.current.opacity = (Math.sin(time * 2) * 0.2 + 0.8) * 0.7;
-      // Use dashSize instead of deprecated offset
       materialRef.current.dashSize = 0.3;
       materialRef.current.gapSize = 0.1;
       materialRef.current.scale = 1;
