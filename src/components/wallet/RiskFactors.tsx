@@ -6,6 +6,7 @@ import { AlertTriangle, Zap, PieChart, Layers } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { RiskFactor } from '@/store/slices/walletSlice';
+import { cn } from '@/lib/utils';
 
 interface RiskFactorsProps {
   className?: string;
@@ -38,6 +39,20 @@ const RiskFactorItem: React.FC<{ factor: RiskFactor }> = ({ factor }) => {
     }
   };
 
+  // Get progress bar color based on impact
+  const getProgressColor = (impact: string) => {
+    switch (impact) {
+      case 'high':
+        return 'bg-gradient-to-r from-red-500 to-red-400';
+      case 'medium':
+        return 'bg-gradient-to-r from-amber-500 to-amber-400';
+      case 'low':
+        return 'bg-gradient-to-r from-green-500 to-green-400';
+      default:
+        return 'bg-blue-500';
+    }
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
@@ -51,14 +66,7 @@ const RiskFactorItem: React.FC<{ factor: RiskFactor }> = ({ factor }) => {
       </div>
       <Progress 
         value={factor.score} 
-        className="h-1.5" 
-        indicatorClassName={
-          factor.impact === 'high' 
-            ? 'bg-gradient-to-r from-red-500 to-red-400' 
-            : factor.impact === 'medium' 
-              ? 'bg-gradient-to-r from-amber-500 to-amber-400' 
-              : 'bg-gradient-to-r from-green-500 to-green-400'
-        } 
+        className={cn("h-1.5", getProgressColor(factor.impact))}
       />
       <p className="text-xs text-gray-400">{factor.description}</p>
     </div>

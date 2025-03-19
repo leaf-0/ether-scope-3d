@@ -1,6 +1,6 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { getWalletDetails, getMockWalletDetails } from '../../lib/api';
+import { toast } from '@/components/ui/use-toast';
 
 export interface Transaction {
   hash: string;
@@ -78,6 +78,11 @@ export const fetchWalletDetails = createAsyncThunk(
       const data = getMockWalletDetails(address);
       return data;
     } catch (error: any) {
+      toast({
+        title: "Error fetching wallet details",
+        description: error.message || 'Failed to fetch wallet details',
+        variant: "destructive"
+      });
       return rejectWithValue(error.message || 'Failed to fetch wallet details');
     }
   }
@@ -90,6 +95,17 @@ const walletSlice = createSlice({
     clearWalletData: () => initialState,
     updateIpLocations: (state, action: PayloadAction<IpLocation[]>) => {
       state.ipLocations = action.payload;
+    },
+    setWalletRiskFactors: (state, action: PayloadAction<RiskFactor[]>) => {
+      state.riskFactors = action.payload;
+    },
+    addTransaction: (state, action: PayloadAction<Transaction>) => {
+      state.transactions.unshift(action.payload);
+      state.recentTransactions.unshift(action.payload);
+      // Keep recent transactions limited to a reasonable number
+      if (state.recentTransactions.length > 20) {
+        state.recentTransactions = state.recentTransactions.slice(0, 20);
+      }
     }
   },
   extraReducers: (builder) => {
@@ -117,13 +133,27 @@ const walletSlice = createSlice({
         state.recentTransactions = action.payload.recentTransactions || [];
         state.riskFactors = action.payload.riskFactors || [];
         state.ipLocations = action.payload.ipLocations || [];
+        
+        // Show success toast
+        toast({
+          title: "Wallet loaded successfully",
+          description: `Address: ${action.payload.address}`,
+          variant: "default"
+        });
       })
       .addCase(fetchWalletDetails.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+        
+        // Show error toast
+        toast({
+          title: "Error loading wallet",
+          description: action.payload as string,
+          variant: "destructive"
+        });
       });
   }
 });
 
-export const { clearWalletData, updateIpLocations } = walletSlice.actions;
+export const { clearWalletData, updateIpLocations, setWalletRiskFactors, addTransaction } = walletSlice.actions;
 export default walletSlice.reducer;

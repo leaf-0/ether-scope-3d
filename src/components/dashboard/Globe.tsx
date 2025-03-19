@@ -107,7 +107,11 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
     if (materialRef.current) {
       const time = clock.getElapsedTime();
       materialRef.current.opacity = (Math.sin(time * 2) * 0.2 + 0.8) * 0.7;
-      materialRef.current.dashOffset = -time * 0.5;
+      // Use dashOffset instead of deprecated offset
+      materialRef.current.dashSize = 0.3;
+      materialRef.current.gapSize = 0.1;
+      materialRef.current.scale = 1;
+      materialRef.current.needsUpdate = true;
     }
   });
   

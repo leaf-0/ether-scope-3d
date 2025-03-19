@@ -93,6 +93,60 @@ export const getMockWalletDetails = (address: string) => {
         gasUsed: '21000',
         status: 'success'
       }
+    ],
+    // Add mock risk factors
+    riskFactors: [
+      {
+        name: 'Exchange Volume',
+        description: 'High transaction volume with known exchange addresses',
+        score: 75,
+        impact: 'medium'
+      },
+      {
+        name: 'Mixer Interaction',
+        description: 'Interactions with known cryptocurrency mixing services',
+        score: 92,
+        impact: 'high'
+      },
+      {
+        name: 'Transaction Velocity',
+        description: 'Rate of transactions over time compared to typical behavior',
+        score: 45,
+        impact: 'low'
+      },
+      {
+        name: 'Sanctioned Entities',
+        description: 'Connections to addresses on sanctions lists',
+        score: 88,
+        impact: 'high'
+      }
+    ],
+    // Add mock IP locations
+    ipLocations: [
+      {
+        ip: '192.168.1.1',
+        country: 'United States',
+        city: 'New York',
+        lat: 40.7128,
+        lon: -74.0060,
+        lastActive: '2023-08-10T14:22:31Z'
+      },
+      {
+        ip: '10.0.0.1',
+        country: 'Germany',
+        city: 'Berlin',
+        lat: 52.5200,
+        lon: 13.4050,
+        lastActive: '2023-08-09T09:15:20Z'
+      },
+      {
+        ip: '172.16.254.1',
+        country: 'Japan',
+        city: 'Tokyo',
+        lat: 35.6762,
+        lon: 139.6503,
+        lastActive: '2023-08-08T17:35:12Z'
+      }
     ]
   };
 };

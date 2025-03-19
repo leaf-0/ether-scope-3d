@@ -34,9 +34,9 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({
   
   // Calculate color based on risk score
   const getColor = () => {
-    if (score < 30) return 'bg-gradient-to-r from-green-500 to-green-300';
-    if (score < 70) return 'bg-gradient-to-r from-yellow-500 to-amber-300';
-    return 'bg-gradient-to-r from-red-600 to-rose-400';
+    if (score < 30) return 'bg-green-500';
+    if (score < 70) return 'bg-amber-500';
+    return 'bg-red-500';
   };
   
   // Get risk category
@@ -72,7 +72,6 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({
   };
   
   const styles = getSizeStyles();
-  const indicatorClass = getColor();
 
   return (
     <div className={`${className}`}>
@@ -95,15 +94,11 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({
           value={progress} 
           max={100}
           className={cn(
-            `${styles.height} bg-gray-800`,
+            styles.height,
+            'bg-gray-800',
             animated ? 'transition-all duration-1000 ease-out' : '',
-            // Apply the custom indicator class via style prop and custom CSS
-            "indicator-custom"
+            getColor()
           )}
-          // Create a custom style tag to apply the indicator color
-          style={{"--indicator-color": indicatorClass.includes('from-green') ? 'var(--green)' : 
-                                      indicatorClass.includes('from-yellow') ? 'var(--amber)' : 
-                                      'var(--rose)'} as React.CSSProperties}
         />
         
         {/* Risk markers */}
