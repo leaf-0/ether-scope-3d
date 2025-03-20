@@ -71,6 +71,8 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
   // Fix: Change ref type for material
   const materialRef = useRef<THREE.LineDashedMaterial>(null);
   
+  const { from, to } = flow;
+  
   // Convert lat/lon to 3D coordinates for 'from' point
   const fromPhi = (90 - from.lat) * (Math.PI / 180);
   const fromTheta = (from.lon + 180) * (Math.PI / 180);
@@ -86,8 +88,6 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
   const toX = -(radius * Math.sin(toPhi) * Math.cos(toTheta));
   const toZ = radius * Math.sin(toPhi) * Math.sin(toTheta);
   const toY = radius * Math.cos(toPhi);
-
-  const { from, to } = flow;
   
   // Create a curved path between the two points
   const curve = useMemo(() => {

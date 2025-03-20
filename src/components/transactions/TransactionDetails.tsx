@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface TransactionDetailsProps {
   selectedNodeId?: string;
@@ -83,10 +84,11 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ selectedNodeId 
               Selected node information
             </CardDescription>
           </div>
-          <Badge variant={
-            selectedNode.riskScore < 30 ? "success" : 
-            selectedNode.riskScore < 70 ? "warning" : "destructive"
-          }>
+          <Badge variant="default" className={cn(
+            selectedNode.riskScore < 30 ? "bg-green-500 hover:bg-green-600" : 
+            selectedNode.riskScore < 70 ? "bg-yellow-500 hover:bg-yellow-600" : 
+            "bg-destructive hover:bg-destructive/80"
+          )}>
             Risk Score: {selectedNode.riskScore}
           </Badge>
         </div>
