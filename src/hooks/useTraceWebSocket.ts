@@ -37,6 +37,12 @@ export const useTraceWebSocket = ({
         socket.onopen = () => {
           console.info('WebSocket connection established');
           if (onOpen) onOpen();
+          
+          toast({
+            title: "Connection Established",
+            description: "Real-time transaction updates are now active",
+            duration: 3000,
+          });
         };
 
         socket.onmessage = (event) => {
@@ -61,8 +67,16 @@ export const useTraceWebSocket = ({
           
           // Try to reconnect if not manually closed and haven't exceeded max retries
           if (!event.wasClean && retryCount < maxRetries) {
+            console.info(`Attempting to reconnect (${retryCount + 1}/${maxRetries})...`);
             const timeout = Math.min(1000 * Math.pow(2, retryCount), 10000);
+            
             reconnectTimeoutRef.current = window.setTimeout(() => {
+              toast({
+                title: "Connection Lost",
+                description: `Reconnecting (attempt ${retryCount + 1}/${maxRetries})...`,
+                duration: 3000,
+              });
+              
               useTraceWebSocket({
                 url,
                 onOpen,
@@ -73,6 +87,13 @@ export const useTraceWebSocket = ({
                 maxRetries
               });
             }, timeout);
+          } else if (retryCount >= maxRetries) {
+            toast({
+              title: "Connection Failed",
+              description: "Could not establish a real-time connection after multiple attempts",
+              variant: "destructive",
+              duration: 5000,
+            });
           }
         };
 
@@ -82,6 +103,13 @@ export const useTraceWebSocket = ({
         };
       } catch (error) {
         console.error('Error creating WebSocket:', error);
+        
+        toast({
+          title: "Connection Error",
+          description: "Failed to establish real-time connection",
+          variant: "destructive",
+          duration: 5000,
+        });
       }
     };
 

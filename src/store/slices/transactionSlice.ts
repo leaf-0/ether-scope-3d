@@ -69,6 +69,30 @@ const transactionSlice = createSlice({
       state.selectedNode = null;
     },
     clearTraceData: () => initialState,
+    updateNodes: (state, action: PayloadAction<Node[]>) => {
+      // Add or update nodes from real-time data
+      action.payload.forEach((newNode) => {
+        const existingNodeIndex = state.nodes.findIndex(n => n.id === newNode.id);
+        if (existingNodeIndex >= 0) {
+          state.nodes[existingNodeIndex] = newNode;
+        } else {
+          state.nodes.push(newNode);
+        }
+      });
+    },
+    updateEdges: (state, action: PayloadAction<Edge[]>) => {
+      // Add or update edges from real-time data
+      action.payload.forEach((newEdge) => {
+        const existingEdgeIndex = state.edges.findIndex(
+          e => e.from === newEdge.from && e.to === newEdge.to
+        );
+        if (existingEdgeIndex >= 0) {
+          state.edges[existingEdgeIndex] = newEdge;
+        } else {
+          state.edges.push(newEdge);
+        }
+      });
+    },
     updateTraceFromWebSocket: (state, action: PayloadAction<any>) => {
       // Handle real-time updates from WebSocket
       const { nodes, edges } = action.payload;
@@ -111,6 +135,8 @@ export const {
   selectNode, 
   clearSelectedNode, 
   clearTraceData,
-  updateTraceFromWebSocket
+  updateTraceFromWebSocket,
+  updateNodes,
+  updateEdges
 } = transactionSlice.actions;
 export default transactionSlice.reducer;

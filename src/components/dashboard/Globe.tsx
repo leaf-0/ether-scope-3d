@@ -145,7 +145,14 @@ const GlobeObject = ({
   flows = []
 }: GlobeProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
-  const textureMap = useTexture('/earthmap.jpg');
+  
+  // Use a textureLoader directly rather than useTexture to avoid the runtime error
+  const textureMap = useMemo(() => {
+    const loader = new THREE.TextureLoader();
+    return loader.load('/earthmap.jpg', undefined, undefined, (error) => {
+      console.error('Error loading texture:', error);
+    });
+  }, []);
   
   useFrame(({ clock }) => {
     if (meshRef.current) {
