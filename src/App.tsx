@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import WalletAnalysis from "./pages/WalletAnalysis";
 import TraceView from "./pages/TraceView";
 import WebGLErrorBoundary from "./components/recovery/WebGLErrorBoundary";
+import StarField from "./components/dashboard/StarField";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,9 +26,10 @@ const App = () => (
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <WebGLErrorBoundary>
+        <div className="relative min-h-screen">
+          <StarField className="fixed inset-0 z-[-1]" />
+          <Toaster />
+          <Sonner />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -38,7 +40,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-        </WebGLErrorBoundary>
+        </div>
       </TooltipProvider>
     </QueryClientProvider>
   </Provider>

@@ -8,7 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { ChevronLeft, Share, Download, Info } from 'lucide-react';
 import { RootState } from '@/store';
+import { AppDispatch } from '@/store';
 import { fetchTransactionTrace, clearTraceData } from '@/store/slices/transactionSlice';
+import WebGLErrorBoundary from '@/components/recovery/WebGLErrorBoundary';
 import TransactionGraph from '@/components/transactions/TransactionGraph';
 import TransactionDetails from '@/components/transactions/TransactionDetails';
 import { useTraceWebSocket } from '@/hooks/useTraceWebSocket';
@@ -17,7 +19,7 @@ const TraceView = () => {
   const { hash } = useParams<{ hash: string }>();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { 
     rootTransaction, nodes, edges, selectedNode, isLoading, error 
   } = useSelector((state: RootState) => state.transaction);
@@ -129,13 +131,17 @@ const TraceView = () => {
             
             <div className="mt-4">
               <TabsContent value="graph" className="m-0">
-                <div className="h-[600px]">
-                  <TransactionGraph className="w-full h-full" />
-                </div>
+                <WebGLErrorBoundary>
+                  <div className="h-[600px]">
+                    <TransactionGraph className="w-full h-full" />
+                  </div>
+                </WebGLErrorBoundary>
               </TabsContent>
               
               <TabsContent value="details" className="m-0">
-                <TransactionDetails transaction={rootTransaction} selectedNodeId={selectedNode} />
+                <TransactionDetails 
+                  selectedNodeId={selectedNode} 
+                />
               </TabsContent>
             </div>
           </CardContent>

@@ -66,8 +66,9 @@ const AnimatedPoint = ({ point, radius }: { point: LocationPoint, radius: number
 };
 
 const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
-  const { from, to, value, color } = flow;
+  // Fix: Change ref type from SVGLineElement to THREE.Line
   const lineRef = useRef<THREE.Line>(null);
+  // Fix: Change ref type for material
   const materialRef = useRef<THREE.LineDashedMaterial>(null);
   
   // Convert lat/lon to 3D coordinates for 'from' point
@@ -85,6 +86,8 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
   const toX = -(radius * Math.sin(toPhi) * Math.cos(toTheta));
   const toZ = radius * Math.sin(toPhi) * Math.sin(toTheta);
   const toY = radius * Math.cos(toPhi);
+
+  const { from, to } = flow;
   
   // Create a curved path between the two points
   const curve = useMemo(() => {
@@ -93,12 +96,12 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
     
     // Calculate middle point with some elevation
     const midPoint = new THREE.Vector3().addVectors(fromVec, toVec).multiplyScalar(0.5);
-    const midElevation = radius * 0.2 * value;
+    const midElevation = radius * 0.2 * flow.value;
     midPoint.normalize().multiplyScalar(radius + midElevation);
     
     // Create a quadratic curve
     return new THREE.QuadraticBezierCurve3(fromVec, midPoint, toVec);
-  }, [fromX, fromY, fromZ, toX, toY, toZ, radius, value]);
+  }, [fromX, fromY, fromZ, toX, toY, toZ, radius, flow.value]);
   
   // Create points along the curve for the line
   const points = useMemo(() => curve.getPoints(50), [curve]);
@@ -126,7 +129,7 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
       </bufferGeometry>
       <lineDashedMaterial
         ref={materialRef}
-        color={color || "#00ffff"}
+        color={flow.color || "#00ffff"}
         dashSize={0.3}
         gapSize={0.1}
         opacity={0.7}
