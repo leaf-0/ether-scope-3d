@@ -77,15 +77,9 @@ export const useTraceWebSocket = ({
                 duration: 3000,
               });
               
-              useTraceWebSocket({
-                url,
-                onOpen,
-                onMessage,
-                onClose,
-                onError,
-                retryCount: retryCount + 1,
-                maxRetries
-              });
+              // Fixed: Don't recursively call the hook itself
+              // Instead, just call connectWebSocket again with updated retry count
+              connectWebSocket();
             }, timeout);
           } else if (retryCount >= maxRetries) {
             toast({
@@ -126,7 +120,7 @@ export const useTraceWebSocket = ({
         ws.current = null;
       }
     };
-  }, [url, retryCount]);
+  }, [url, retryCount, dispatch, maxRetries, onOpen, onMessage, onClose, onError]);
 
   return ws.current;
 };

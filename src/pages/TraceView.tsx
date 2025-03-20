@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
-import { ChevronLeft, Search, Share, Download, Info } from 'lucide-react';
+import { ChevronLeft, Share, Download, Info } from 'lucide-react';
 import { RootState } from '@/store';
 import { fetchTransactionTrace, clearTraceData } from '@/store/slices/transactionSlice';
 import TransactionGraph from '@/components/transactions/TransactionGraph';
@@ -24,7 +23,7 @@ const TraceView = () => {
   );
 
   // Connect to WebSocket for real-time trace updates
-  const ws = useTraceWebSocket({
+  useTraceWebSocket({
     url: `ws://localhost:5000/ws/trace/${hash}`,
     onOpen: () => {
       console.log('Connected to trace WebSocket');
