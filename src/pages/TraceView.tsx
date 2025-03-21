@@ -15,6 +15,15 @@ import TransactionGraph from '@/components/transactions/TransactionGraph';
 import SpiderMap from '@/components/transactions/SpiderMap';
 import TransactionDetails from '@/components/transactions/TransactionDetails';
 import { useTraceWebSocket } from '@/hooks/useTraceWebSocket';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 const TraceView = () => {
   const { hash } = useParams<{ hash: string }>();
@@ -25,6 +34,10 @@ const TraceView = () => {
     rootTransaction, nodes, edges, selectedNode, isLoading, error 
   } = useSelector((state: RootState) => state.transaction);
 
+  // Add pagination state for related transactions
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
+  
   // Connect to WebSocket for real-time trace updates
   useTraceWebSocket({
     url: `ws://localhost:5000/ws/trace/${hash}`,
@@ -64,6 +77,67 @@ const TraceView = () => {
   }, [error, toast]);
 
   const [activeTab, setActiveTab] = useState('graph');
+
+  // Calculate related transactions pagination
+  const relatedTransactions = edges.map(edge => ({
+    from: edge.from,
+    to: edge.to,
+    value: edge.value,
+    timestamp: edge.timestamp
+  }));
+  
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentRelatedTransactions = relatedTransactions.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(relatedTransactions.length / itemsPerPage);
+  
+  // Handle page changes
+  const handlePageChange = (page: number) => {
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+  
+  // Generate page numbers
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      pageNumbers.push(1);
+      
+      let start = Math.max(2, currentPage - 1);
+      let end = Math.min(totalPages - 1, currentPage + 1);
+      
+      if (currentPage <= 2) {
+        end = 3;
+      } else if (currentPage >= totalPages - 1) {
+        start = totalPages - 2;
+      }
+      
+      if (start > 2) {
+        pageNumbers.push('ellipsis-start');
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pageNumbers.push(i);
+      }
+      
+      if (end < totalPages - 1) {
+        pageNumbers.push('ellipsis-end');
+      }
+      
+      if (totalPages > 1) {
+        pageNumbers.push(totalPages);
+      }
+    }
+    
+    return pageNumbers;
+  };
 
   if (!hash) {
     return (
@@ -152,6 +226,79 @@ const TraceView = () => {
                 <TransactionDetails 
                   selectedNodeId={selectedNode} 
                 />
+                
+                {relatedTransactions.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-medium mb-4">Related Transactions</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      {currentRelatedTransactions.map((tx, index) => (
+                        <Card key={index} className="glass overflow-hidden">
+                          <CardContent className="p-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-xs text-gray-400">From</p>
+                                <p className="font-mono text-sm truncate">{tx.from}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-400">To</p>
+                                <p className="font-mono text-sm truncate">{tx.to}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-400">Value</p>
+                                <p className="text-sm">{tx.value} ETH</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-400">Date</p>
+                                <p className="text-sm">{new Date(tx.timestamp).toLocaleString()}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                    
+                    {totalPages > 1 && (
+                      <Pagination className="mt-4">
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious 
+                              onClick={() => handlePageChange(currentPage - 1)}
+                              disabled={currentPage === 1}
+                            />
+                          </PaginationItem>
+                          
+                          {getPageNumbers().map((page, index) => {
+                            if (page === 'ellipsis-start' || page === 'ellipsis-end') {
+                              return (
+                                <PaginationItem key={`ellipsis-${index}`}>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              );
+                            }
+                            
+                            return (
+                              <PaginationItem key={`page-${page}`}>
+                                <PaginationLink
+                                  isActive={currentPage === page}
+                                  onClick={() => handlePageChange(Number(page))}
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            );
+                          })}
+                          
+                          <PaginationItem>
+                            <PaginationNext 
+                              onClick={() => handlePageChange(currentPage + 1)}
+                              disabled={currentPage === totalPages}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    )}
+                  </div>
+                )}
               </TabsContent>
             </div>
           </CardContent>

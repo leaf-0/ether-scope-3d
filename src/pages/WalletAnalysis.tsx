@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,6 +11,15 @@ import { fetchWalletDetails } from '@/store/slices/walletSlice';
 import WalletCard from '@/components/wallet/WalletCard';
 import RiskGauge from '@/components/wallet/RiskGauge';
 import TransactionTable from '@/components/transactions/TransactionTable';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 interface Transaction {
   hash: string;
@@ -31,12 +39,14 @@ const WalletAnalysis = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showRiskDetails, setShowRiskDetails] = useState(false);
   
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  
   const walletState = useSelector((state: RootState) => state.wallet);
   const { isLoading, error, transactions, walletDetails, riskFactors } = walletState;
   
   useEffect(() => {
     if (address) {
-      // TypeScript safe dispatch with AppDispatch
       dispatch(fetchWalletDetails(address) as any);
     }
   }, [address, dispatch]);
@@ -46,14 +56,12 @@ const WalletAnalysis = () => {
   };
   
   const handleDownloadReport = () => {
-    // In a real implementation, this would call the backend API to generate and download a report
     toast({
       title: 'Generating report',
       description: 'Your wallet analysis report is being generated and will download shortly.',
     });
   };
   
-  // Mock transactions for demonstration
   const mockTransactions: Transaction[] = [
     {
       hash: '0x8a008b8dbbc1d1e8e96e9d0b3fcb7648addf836a1f3c3bf0f9cc3bee3d1cf688',
@@ -78,7 +86,6 @@ const WalletAnalysis = () => {
     },
   ];
   
-  // Mock risk factors
   const mockRiskFactors = [
     { 
       name: 'Mixing Service Interaction',
@@ -99,6 +106,65 @@ const WalletAnalysis = () => {
       impact: 'medium' as const
     },
   ];
+  
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentTransactions = (transactions && transactions.length > 0 ? transactions : mockTransactions)
+    .slice(indexOfFirstItem, indexOfLastItem);
+    
+  const totalTransactions = (transactions && transactions.length > 0 ? transactions : mockTransactions).length;
+  const totalPages = Math.ceil(totalTransactions / itemsPerPage);
+  
+  const handlePageChange = (page: number) => {
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
+      
+      const tableElement = document.getElementById('transaction-table');
+      if (tableElement) {
+        tableElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+  
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      pageNumbers.push(1);
+      
+      let start = Math.max(2, currentPage - 1);
+      let end = Math.min(totalPages - 1, currentPage + 1);
+      
+      if (currentPage <= 2) {
+        end = 3;
+      } else if (currentPage >= totalPages - 1) {
+        start = totalPages - 2;
+      }
+      
+      if (start > 2) {
+        pageNumbers.push('ellipsis-start');
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pageNumbers.push(i);
+      }
+      
+      if (end < totalPages - 1) {
+        pageNumbers.push('ellipsis-end');
+      }
+      
+      if (totalPages > 1) {
+        pageNumbers.push(totalPages);
+      }
+    }
+    
+    return pageNumbers;
+  };
   
   if (isLoading) {
     return (
@@ -231,10 +297,53 @@ const WalletAnalysis = () => {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
-          <TransactionTable 
-            transactions={transactions && transactions.length > 0 ? transactions : mockTransactions}
-            title="Transaction History"
-          />
+          <div id="transaction-table">
+            <TransactionTable 
+              transactions={currentTransactions}
+              title="Transaction History"
+            />
+            
+            {totalPages > 1 && (
+              <Pagination className="mt-4">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    />
+                  </PaginationItem>
+                  
+                  {getPageNumbers().map((page, index) => {
+                    if (page === 'ellipsis-start' || page === 'ellipsis-end') {
+                      return (
+                        <PaginationItem key={`ellipsis-${index}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+                    
+                    return (
+                      <PaginationItem key={`page-${page}`}>
+                        <PaginationLink
+                          isActive={currentPage === page}
+                          onClick={() => handlePageChange(Number(page))}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+          </div>
         </TabsContent>
         
         <TabsContent value="analytics">
