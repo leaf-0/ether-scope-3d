@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 // Base API URL - update with actual backend URL in production
@@ -61,6 +60,23 @@ export const getReport = async (reportId: string) => {
     return response.data;
   } catch (error) {
     console.error('Error fetching report:', error);
+    throw error;
+  }
+};
+
+// Pagination API
+export const getPaginatedTransactions = async (
+  address: string, 
+  page: number, 
+  limit: number
+) => {
+  try {
+    const response = await api.get(`/transactions/${address}`, {
+      params: { page, limit }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching paginated transactions:', error);
     throw error;
   }
 };
@@ -218,6 +234,38 @@ export const getMockTransactionTrace = (hash: string) => {
         timestamp: '2023-08-05T12:01:20Z'
       }
     ]
+  };
+};
+
+// Mock paginated data for development
+export const getMockPaginatedTransactions = (
+  address: string,
+  page: number,
+  limit: number
+) => {
+  // Create a larger set of mock transactions
+  const allTransactions = Array.from({ length: 50 }, (_, index) => ({
+    hash: `0x${Math.random().toString(16).substring(2)}${Math.random().toString(16).substring(2)}`,
+    from: index % 3 === 0 ? address : `0x${Math.random().toString(16).substring(2)}`,
+    to: index % 3 !== 0 ? address : `0x${Math.random().toString(16).substring(2)}`,
+    value: (Math.random() * 10).toFixed(2),
+    timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
+    gasUsed: `${Math.floor(Math.random() * 50000)}`,
+    status: Math.random() > 0.1 ? 'success' : 'failed'
+  }));
+  
+  // Calculate pagination
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedData = allTransactions.slice(startIndex, endIndex);
+  
+  return {
+    transactions: paginatedData,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(allTransactions.length / limit),
+      totalItems: allTransactions.length
+    }
   };
 };
 

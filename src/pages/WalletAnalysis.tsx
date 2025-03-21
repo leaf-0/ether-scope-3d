@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,15 +12,7 @@ import { fetchWalletDetails } from '@/store/slices/walletSlice';
 import WalletCard from '@/components/wallet/WalletCard';
 import RiskGauge from '@/components/wallet/RiskGauge';
 import TransactionTable from '@/components/transactions/TransactionTable';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
+import PageNavigation from '@/components/ui/page-navigation';
 
 interface Transaction {
   hash: string;
@@ -124,46 +117,6 @@ const WalletAnalysis = () => {
         tableElement.scrollIntoView({ behavior: 'smooth' });
       }
     }
-  };
-  
-  const getPageNumbers = () => {
-    const pageNumbers = [];
-    const maxPagesToShow = 5;
-    
-    if (totalPages <= maxPagesToShow) {
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      pageNumbers.push(1);
-      
-      let start = Math.max(2, currentPage - 1);
-      let end = Math.min(totalPages - 1, currentPage + 1);
-      
-      if (currentPage <= 2) {
-        end = 3;
-      } else if (currentPage >= totalPages - 1) {
-        start = totalPages - 2;
-      }
-      
-      if (start > 2) {
-        pageNumbers.push('ellipsis-start');
-      }
-      
-      for (let i = start; i <= end; i++) {
-        pageNumbers.push(i);
-      }
-      
-      if (end < totalPages - 1) {
-        pageNumbers.push('ellipsis-end');
-      }
-      
-      if (totalPages > 1) {
-        pageNumbers.push(totalPages);
-      }
-    }
-    
-    return pageNumbers;
   };
   
   if (isLoading) {
@@ -303,46 +256,12 @@ const WalletAnalysis = () => {
               title="Transaction History"
             />
             
-            {totalPages > 1 && (
-              <Pagination className="mt-4">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious 
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    />
-                  </PaginationItem>
-                  
-                  {getPageNumbers().map((page, index) => {
-                    if (page === 'ellipsis-start' || page === 'ellipsis-end') {
-                      return (
-                        <PaginationItem key={`ellipsis-${index}`}>
-                          <PaginationEllipsis />
-                        </PaginationItem>
-                      );
-                    }
-                    
-                    return (
-                      <PaginationItem key={`page-${page}`}>
-                        <PaginationLink
-                          isActive={currentPage === page}
-                          onClick={() => handlePageChange(Number(page))}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  })}
-                  
-                  <PaginationItem>
-                    <PaginationNext 
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            )}
+            <PageNavigation 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              className="mt-4"
+            />
           </div>
         </TabsContent>
         

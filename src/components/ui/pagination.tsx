@@ -38,6 +38,7 @@ PaginationItem.displayName = "PaginationItem"
 type PaginationLinkProps = {
   isActive?: boolean
   disabled?: boolean
+  onClick?: () => void
 } & Pick<ButtonProps, "size"> &
   React.ComponentProps<"a">
 
@@ -46,6 +47,7 @@ const PaginationLink = ({
   isActive,
   disabled,
   size = "icon",
+  onClick,
   ...props
 }: PaginationLinkProps) => (
   <a
@@ -61,6 +63,16 @@ const PaginationLink = ({
       },
       className
     )}
+    onClick={(e) => {
+      if (disabled) {
+        e.preventDefault();
+        return;
+      }
+      if (onClick) {
+        e.preventDefault();
+        onClick();
+      }
+    }}
     {...props}
   />
 )
@@ -69,6 +81,7 @@ PaginationLink.displayName = "PaginationLink"
 const PaginationPrevious = ({
   className,
   disabled,
+  onClick,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink
@@ -76,6 +89,7 @@ const PaginationPrevious = ({
     size="default"
     className={cn("gap-1 pl-2.5", className)}
     disabled={disabled}
+    onClick={onClick}
     {...props}
   >
     <ChevronLeft className="h-4 w-4" />
@@ -87,6 +101,7 @@ PaginationPrevious.displayName = "PaginationPrevious"
 const PaginationNext = ({
   className,
   disabled,
+  onClick,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink
@@ -94,6 +109,7 @@ const PaginationNext = ({
     size="default"
     className={cn("gap-1 pr-2.5", className)}
     disabled={disabled}
+    onClick={onClick}
     {...props}
   >
     <span>Next</span>
