@@ -12,6 +12,7 @@ import { AppDispatch } from '@/store';
 import { fetchTransactionTrace, clearTraceData } from '@/store/slices/transactionSlice';
 import WebGLErrorBoundary from '@/components/recovery/WebGLErrorBoundary';
 import TransactionGraph from '@/components/transactions/TransactionGraph';
+import SpiderMap from '@/components/transactions/SpiderMap';
 import TransactionDetails from '@/components/transactions/TransactionDetails';
 import { useTraceWebSocket } from '@/hooks/useTraceWebSocket';
 
@@ -124,9 +125,10 @@ const TraceView = () => {
         
         <Tabs defaultValue="graph" value={activeTab} onValueChange={setActiveTab} className="mt-4">
           <CardContent className="pt-0">
-            <TabsList className="grid w-full max-w-md grid-cols-2">
-              <TabsTrigger value="graph">Trace Graph</TabsTrigger>
-              <TabsTrigger value="details">Transaction Details</TabsTrigger>
+            <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsTrigger value="graph">3D Graph</TabsTrigger>
+              <TabsTrigger value="spider">Spider Map</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
             </TabsList>
             
             <div className="mt-4">
@@ -134,6 +136,14 @@ const TraceView = () => {
                 <WebGLErrorBoundary>
                   <div className="h-[600px]">
                     <TransactionGraph className="w-full h-full" />
+                  </div>
+                </WebGLErrorBoundary>
+              </TabsContent>
+              
+              <TabsContent value="spider" className="m-0">
+                <WebGLErrorBoundary>
+                  <div className="h-[600px]">
+                    <SpiderMap className="w-full h-full" />
                   </div>
                 </WebGLErrorBoundary>
               </TabsContent>
