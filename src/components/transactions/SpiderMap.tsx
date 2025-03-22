@@ -117,7 +117,8 @@ const SpiderEdge = ({
   value: string; 
   isHighlighted: boolean;
 }) => {
-  const lineRef = useRef<THREE.Line>(null);
+  // Fix: Change ref type from SVGLineElement to THREE.Line
+  const lineRef = useRef<THREE.Line | null>(null);
   
   // Pulsing animation for edges
   useFrame(({ clock }) => {

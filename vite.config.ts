@@ -14,8 +14,12 @@ export default defineConfig(({ mode }) => ({
     // Only use componentTagger in development mode and if it can be imported
     mode === 'development' && (() => {
       try {
-        const { componentTagger } = require("lovable-tagger");
-        return componentTagger();
+        // Safely try to import the lovable-tagger package
+        const tagger = require("lovable-tagger");
+        if (typeof tagger.componentTagger === 'function') {
+          return tagger.componentTagger();
+        }
+        return null;
       } catch (e) {
         console.warn('Could not load lovable-tagger, continuing without it');
         return null;
