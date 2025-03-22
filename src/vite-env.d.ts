@@ -9,16 +9,21 @@ declare global {
   }
 }
 
-// This augments the namespace to avoid TypeScript errors with Three.js line references
+// Type definition for THREE.Line references in our components
 declare module 'three' {
   interface Line {
-    __threeJSLine: true;
+    __lineType: true;
   }
 }
 
-// Type definition for the ref in React Three Fiber components
+// Extend the ref types for React Three Fiber
 declare module '@react-three/fiber' {
-  interface ThreeLine extends Line {
-    __threeJSLine: true;
+  interface ThreeElements {
+    line: LineProps;
+  }
+  
+  interface LineProps extends Object3DProps {
+    geometry?: BufferGeometry;
+    material?: Material | Material[];
   }
 }

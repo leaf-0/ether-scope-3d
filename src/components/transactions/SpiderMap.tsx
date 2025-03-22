@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
@@ -117,7 +118,7 @@ const SpiderEdge = ({
   isHighlighted: boolean;
 }) => {
   // Fix: Change ref type from SVGLineElement to THREE.Line
-  const lineRef = useRef<THREE.Line | null>(null);
+  const lineRef = useRef<THREE.Line>(null);
   
   // Pulsing animation for edges
   useFrame(({ clock }) => {
