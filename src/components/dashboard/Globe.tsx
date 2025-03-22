@@ -1,4 +1,3 @@
-
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Sphere, MeshDistortMaterial } from '@react-three/drei';
@@ -66,9 +65,7 @@ const AnimatedPoint = ({ point, radius }: { point: LocationPoint, radius: number
 };
 
 const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
-  // Fix: Change ref type to THREE.Line
   const lineRef = useRef<THREE.Line>(null);
-  // Fix: Change ref type for material
   const materialRef = useRef<THREE.LineDashedMaterial>(null);
   
   const { from, to } = flow;

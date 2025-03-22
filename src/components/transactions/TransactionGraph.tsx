@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
@@ -35,7 +34,6 @@ const NodeObject = ({
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   
-  // Determine color based on risk score
   const getColor = (score: number) => {
     if (score < 30) return new THREE.Color('#4CFF4C'); // green
     if (score < 70) return new THREE.Color('#FFD700'); // amber
@@ -44,7 +42,6 @@ const NodeObject = ({
   
   useFrame(() => {
     if (meshRef.current) {
-      // Subtle pulsing effect for selected node
       if (isSelected) {
         meshRef.current.scale.x = 1 + Math.sin(Date.now() * 0.005) * 0.1;
         meshRef.current.scale.y = 1 + Math.sin(Date.now() * 0.005) * 0.1;
@@ -88,22 +85,18 @@ const EdgeObject = ({
   end: THREE.Vector3; 
   value: string; 
 }) => {
-  // Fix: Change ref type from SVGLineElement to THREE.Line
   const ref = useRef<THREE.Line>(null);
   
   useFrame(({ clock }) => {
     if (ref.current && ref.current.material instanceof THREE.LineBasicMaterial) {
-      // Pulsing opacity effect
       const opacity = 0.4 + Math.sin(clock.getElapsedTime() * 2) * 0.2;
       ref.current.material.opacity = opacity;
     }
   });
   
-  // Create points for the line
   const points = [start, end];
   const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
   
-  // Set line thickness based on transaction value
   const valueNum = parseFloat(value);
   const thickness = valueNum > 20 ? 2 : (valueNum > 5 ? 1.5 : 1);
   
@@ -124,11 +117,9 @@ const GraphScene = ({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) => {
   const selectedNodeId = useSelector((state: RootState) => state.transaction.selectedNode);
   const [nodePositions, setNodePositions] = useState<Map<string, THREE.Vector3>>(new Map());
   
-  // Force-directed layout simulation
   useEffect(() => {
     if (nodes.length === 0) return;
     
-    // Initialize positions if not already set
     const newPositions = new Map<string, THREE.Vector3>();
     nodes.forEach(node => {
       if (!nodePositions.has(node.id)) {
@@ -143,10 +134,8 @@ const GraphScene = ({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) => {
       }
     });
     
-    // Simple force-directed layout
     const iterations = 50;
     for (let i = 0; i < iterations; i++) {
-      // Repulsive forces between nodes
       for (let a = 0; a < nodes.length; a++) {
         for (let b = a + 1; b < nodes.length; b++) {
           const nodeA = nodes[a];
@@ -165,7 +154,6 @@ const GraphScene = ({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) => {
         }
       }
       
-      // Attractive forces for edges
       edges.forEach(edge => {
         const sourcePos = newPositions.get(edge.from);
         const targetPos = newPositions.get(edge.to);
@@ -190,7 +178,6 @@ const GraphScene = ({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) => {
   
   return (
     <>
-      {/* Render edges first so they appear behind nodes */}
       {edges.map(edge => {
         const startPos = nodePositions.get(edge.from);
         const endPos = nodePositions.get(edge.to);
@@ -207,7 +194,6 @@ const GraphScene = ({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) => {
         );
       })}
       
-      {/* Render nodes */}
       {nodes.map(node => {
         const position = nodePositions.get(node.id);
         

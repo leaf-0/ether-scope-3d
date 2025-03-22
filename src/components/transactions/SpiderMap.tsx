@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
@@ -29,7 +28,6 @@ interface EdgeData {
   timestamp: string;
 }
 
-// Node component for the spider map
 const SpiderNode = ({ 
   node, 
   position, 
@@ -46,14 +44,12 @@ const SpiderNode = ({
   const meshRef = useRef<THREE.Mesh>(null);
   const radiusScale = node.type === 'wallet' ? 1.2 : (node.type === 'contract' ? 1 : 0.8);
   
-  // Get color based on risk score
   const getColor = (score: number) => {
-    if (score < 30) return new THREE.Color('#4CFF4C'); // green
-    if (score < 70) return new THREE.Color('#FFD700'); // amber
-    return new THREE.Color('#FF0044'); // red
+    if (score < 30) return new THREE.Color('#4CFF4C');
+    if (score < 70) return new THREE.Color('#FFD700');
+    return new THREE.Color('#FF0044');
   };
   
-  // Pulse effect for selected nodes
   useFrame(({ clock }) => {
     if (meshRef.current) {
       if (isSelected) {
@@ -67,7 +63,6 @@ const SpiderNode = ({
   
   return (
     <group position={position}>
-      {/* Main node sphere */}
       <mesh ref={meshRef} onClick={onClick}>
         {node.type === 'wallet' ? (
           <boxGeometry args={[size * radiusScale, size * radiusScale, size * radiusScale]} />
@@ -85,7 +80,6 @@ const SpiderNode = ({
         />
       </mesh>
       
-      {/* Labels */}
       {(isSelected || size > 1.2) && (
         <Html distanceFactor={10} position={[0, size * 1.5, 0]}>
           <div className="px-2 py-1 bg-black/70 backdrop-blur-sm rounded-md text-center text-white text-xs whitespace-nowrap">
@@ -105,7 +99,6 @@ const SpiderNode = ({
   );
 };
 
-// Edge component for the spider map
 const SpiderEdge = ({ 
   fromPos, 
   toPos, 
@@ -117,10 +110,8 @@ const SpiderEdge = ({
   value: string; 
   isHighlighted: boolean;
 }) => {
-  // Fix: Change ref type from SVGLineElement to THREE.Line
   const lineRef = useRef<THREE.Line>(null);
   
-  // Pulsing animation for edges
   useFrame(({ clock }) => {
     if (lineRef.current && lineRef.current.material instanceof THREE.LineBasicMaterial) {
       if (isHighlighted) {
@@ -132,13 +123,10 @@ const SpiderEdge = ({
     }
   });
   
-  // Calculate edge thickness based on value
   const valueNum = parseFloat(value || '0');
   const thickness = valueNum > 100 ? 3 : valueNum > 10 ? 2 : 1;
   
-  // Create points for curved edge
   const middlePoint = new THREE.Vector3().addVectors(fromPos, toPos).multiplyScalar(0.5);
-  // Add some elevation to curve
   const direction = new THREE.Vector3().subVectors(fromPos, toPos).cross(new THREE.Vector3(0, 1, 0)).normalize();
   middlePoint.add(direction.multiplyScalar(0.3));
   
@@ -158,14 +146,12 @@ const SpiderEdge = ({
   );
 };
 
-// Main spider map scene
 const SpiderScene = () => {
   const dispatch = useDispatch();
   const { nodes, edges, selectedNode } = useSelector((state: RootState) => state.transaction);
   const [nodePositions, setNodePositions] = useState<Map<string, THREE.Vector3>>(new Map());
   const [centralNode, setCentralNode] = useState<string | null>(null);
   
-  // Transform data for rendering
   const graphNodes: NodeData[] = nodes.map(node => ({
     id: node.id,
     type: node.type,
@@ -182,28 +168,22 @@ const SpiderScene = () => {
     timestamp: edge.timestamp
   }));
   
-  // Determine central node and calculate positions
   useEffect(() => {
     if (graphNodes.length === 0) return;
     
-    // Find central node (either selected node or first node)
     const centralId = selectedNode || graphNodes[0].id;
     setCentralNode(centralId);
     
-    // Calculate node positions based on the central node
     const newPositions = new Map<string, THREE.Vector3>();
     
-    // Position the central node at the center
     newPositions.set(centralId, new THREE.Vector3(0, 0, 0));
     
-    // Find directly connected nodes to the central node
     const connectedNodes = new Set<string>();
     graphEdges.forEach(edge => {
       if (edge.fromId === centralId) connectedNodes.add(edge.toId);
       if (edge.toId === centralId) connectedNodes.add(edge.fromId);
     });
     
-    // Position connected nodes in a circle around the central node
     const connectedCount = connectedNodes.size;
     let i = 0;
     connectedNodes.forEach(nodeId => {
@@ -216,7 +196,6 @@ const SpiderScene = () => {
       }
     });
     
-    // Position remaining nodes in an outer circle
     const remainingNodes = graphNodes.filter(node => 
       !newPositions.has(node.id)
     );
@@ -225,14 +204,13 @@ const SpiderScene = () => {
       const angle = (i / remainingNodes.length) * Math.PI * 2;
       const x = Math.cos(angle) * 6;
       const z = Math.sin(angle) * 6;
-      const y = (Math.random() - 0.5) * 2; // Some vertical variation
+      const y = (Math.random() - 0.5) * 2;
       newPositions.set(node.id, new THREE.Vector3(x, y, z));
     });
     
     setNodePositions(newPositions);
   }, [graphNodes, graphEdges, selectedNode]);
   
-  // Handle node selection
   const handleNodeClick = (nodeId: string) => {
     if (selectedNode === nodeId) {
       dispatch(clearSelectedNode());
@@ -245,7 +223,6 @@ const SpiderScene = () => {
   
   return (
     <>
-      {/* Render edges */}
       {graphEdges.map(edge => {
         const fromPos = nodePositions.get(edge.fromId);
         const toPos = nodePositions.get(edge.toId);
@@ -267,7 +244,6 @@ const SpiderScene = () => {
         );
       })}
       
-      {/* Render nodes */}
       {graphNodes.map(node => {
         const position = nodePositions.get(node.id);
         if (!position) return null;
@@ -287,10 +263,8 @@ const SpiderScene = () => {
         );
       })}
       
-      {/* Ambient light */}
       <ambientLight intensity={0.3} />
       
-      {/* Directional lights */}
       <directionalLight position={[5, 5, 5]} intensity={0.8} />
       <directionalLight position={[-5, -5, -5]} intensity={0.4} />
     </>
