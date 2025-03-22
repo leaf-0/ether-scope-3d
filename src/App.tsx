@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import WalletAnalysis from "./pages/WalletAnalysis";
 import TraceView from "./pages/TraceView";
+import Analytics from "./pages/Analytics";
 import WebGLErrorBoundary from "./components/recovery/WebGLErrorBoundary";
 import StarField from "./components/dashboard/StarField";
 
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/wallet/:address" element={<WalletAnalysis />} />
               <Route path="/trace/:hash" element={<TraceView />} />
+              <Route path="/analytics" element={<Analytics />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
