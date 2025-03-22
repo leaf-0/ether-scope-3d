@@ -11,7 +11,7 @@ import NotFound from "./pages/NotFound";
 import WalletAnalysis from "./pages/WalletAnalysis";
 import TraceView from "./pages/TraceView";
 import Analytics from "./pages/Analytics";
-import WebGLErrorBoundary from "./components/recovery/WebGLErrorBoundary";
+import MainLayout from "./components/layout/MainLayout";
 import StarField from "./components/dashboard/StarField";
 
 const queryClient = new QueryClient({
@@ -34,11 +34,10 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/wallet/:address" element={<WalletAnalysis />} />
-              <Route path="/trace/:hash" element={<TraceView />} />
-              <Route path="/analytics" element={<Analytics />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
+              <Route path="/wallet/:address" element={<MainLayout><WalletAnalysis /></MainLayout>} />
+              <Route path="/trace/:hash" element={<MainLayout><TraceView /></MainLayout>} />
+              <Route path="/analytics" element={<MainLayout><Analytics /></MainLayout>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
