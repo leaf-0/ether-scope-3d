@@ -23,18 +23,21 @@ const AppSidebar = () => {
     { title: 'Wallets', icon: Wallet, path: '/wallet' },
     { title: 'Traces', icon: Activity, path: '/trace' },
     { title: 'Analytics', icon: BarChart2, path: '/analytics' },
+    { title: 'Settings', icon: Settings, path: '/settings' },
   ];
 
   const toolsNavItems = [
-    { title: 'Explorer', icon: Search, path: '/analytics' },
-    { title: 'Settings', icon: Settings, path: '/settings' },
+    { title: 'Explorer', icon: Search, path: '/explorer' },
   ];
 
   const isActive = (path: string) => {
     if (path === '/dashboard' && location.pathname === '/') return true;
     if (path === '/wallet' && location.pathname.includes('/wallet')) return true;
     if (path === '/trace' && location.pathname.includes('/trace')) return true;
-    return location.pathname === path || location.pathname.startsWith(path);
+    if (path === '/settings' && location.pathname.includes('/settings')) return true;
+    if (path === '/analytics' && location.pathname.includes('/analytics')) return true;
+    if (path === '/explorer' && location.pathname.includes('/explorer')) return true;
+    return location.pathname === path;
   };
 
   return (

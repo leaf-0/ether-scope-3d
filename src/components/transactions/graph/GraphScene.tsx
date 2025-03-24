@@ -20,7 +20,7 @@ const GraphScene = () => {
     id: node.id,
     type: node.type,
     value: node.value,
-    label: node.label || node.id.substring(0, 6),
+    label: node.id.substring(0, 6), // Use a substring of id as label if not available
     riskScore: node.riskScore
   }));
   

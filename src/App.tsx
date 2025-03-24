@@ -14,6 +14,7 @@ import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import MainLayout from "./components/layout/MainLayout";
 import StarField from "./components/dashboard/StarField";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,12 +35,13 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={<Index />} />
               <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
               <Route path="/wallet/:address" element={<MainLayout><WalletAnalysis /></MainLayout>} />
               <Route path="/trace/:hash" element={<MainLayout><TraceView /></MainLayout>} />
               <Route path="/analytics" element={<MainLayout><Analytics /></MainLayout>} />
               <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
+              <Route path="/explorer" element={<MainLayout><Analytics /></MainLayout>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
