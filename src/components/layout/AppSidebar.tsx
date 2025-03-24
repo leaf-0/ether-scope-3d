@@ -25,6 +25,11 @@ const AppSidebar = () => {
     { title: 'Analytics', icon: BarChart2, path: '/analytics' },
   ];
 
+  const toolsNavItems = [
+    { title: 'Explorer', icon: Search, path: '/analytics' },
+    { title: 'Settings', icon: Settings, path: '/settings' },
+  ];
+
   const isActive = (path: string) => {
     if (path === '/dashboard' && location.pathname === '/') return true;
     if (path === '/wallet' && location.pathname.includes('/wallet')) return true;
@@ -77,22 +82,24 @@ const AppSidebar = () => {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="/analytics" className="flex items-center space-x-2 text-gray-300 hover:text-white hover:bg-white/5">
-                    <Search className="h-4 w-4" />
-                    <span>Explorer</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="#" className="flex items-center space-x-2 text-gray-300 hover:text-white hover:bg-white/5">
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {toolsNavItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <Link 
+                      to={item.path}
+                      className={`flex items-center space-x-2 ${
+                        isActive(item.path) 
+                          ? 'text-white bg-gradient-to-r from-neon-blue/20 to-neon-purple/20 border border-white/10' 
+                          : 'text-gray-300 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                      {isActive(item.path) && <ChevronRight size={14} className="ml-auto" />}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

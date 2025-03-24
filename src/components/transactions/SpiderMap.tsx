@@ -132,21 +132,18 @@ const SpiderEdge = ({
   
   const curve = new THREE.QuadraticBezierCurve3(fromPos, middlePoint, toPos);
   const points = curve.getPoints(20);
-  const geometry = new THREE.BufferGeometry().setFromPoints(points);
   
   return (
-    <primitive 
-      object={new THREE.Line(
-        geometry, 
-        new THREE.LineBasicMaterial({ 
-          color: isHighlighted ? "#00ffff" : "#ffffff", 
-          transparent: true, 
-          opacity: isHighlighted ? 0.8 : 0.3, 
-          linewidth: thickness 
-        })
-      )} 
-      ref={ref}
-    />
+    <line ref={ref}>
+      <bufferGeometry attach="geometry" setFromPoints={points} />
+      <lineBasicMaterial
+        attach="material"
+        color={isHighlighted ? "#00ffff" : "#ffffff"}
+        transparent
+        opacity={isHighlighted ? 0.8 : 0.3}
+        linewidth={thickness}
+      />
+    </line>
   );
 };
 
@@ -302,7 +299,7 @@ const SpiderMap: React.FC<SpiderMapProps> = ({ className }) => {
   
   return (
     <div className={`h-full w-full ${className}`}>
-      <Canvas className="w-full h-full" camera={{ position: [0, 4, 10], fov: 50 }}>
+      <Canvas camera={{ position: [0, 4, 10], fov: 50 }}>
         <SpiderScene />
         <OrbitControls 
           makeDefault 

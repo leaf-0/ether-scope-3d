@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import WalletAnalysis from "./pages/WalletAnalysis";
 import TraceView from "./pages/TraceView";
 import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
 import MainLayout from "./components/layout/MainLayout";
 import StarField from "./components/dashboard/StarField";
 
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/wallet/:address" element={<MainLayout><WalletAnalysis /></MainLayout>} />
               <Route path="/trace/:hash" element={<MainLayout><TraceView /></MainLayout>} />
               <Route path="/analytics" element={<MainLayout><Analytics /></MainLayout>} />
+              <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

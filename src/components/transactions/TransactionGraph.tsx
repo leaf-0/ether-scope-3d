@@ -95,24 +95,18 @@ const EdgeObject = ({
   });
   
   const points = [start, end];
-  const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-  
-  const valueNum = parseFloat(value);
-  const thickness = valueNum > 20 ? 2 : (valueNum > 5 ? 1.5 : 1);
   
   return (
-    <primitive 
-      object={new THREE.Line(
-        lineGeometry, 
-        new THREE.LineBasicMaterial({ 
-          color: "#00D4FF", 
-          transparent: true, 
-          opacity: 0.6, 
-          linewidth: thickness 
-        })
-      )} 
-      ref={ref}
-    />
+    <line ref={ref}>
+      <bufferGeometry attach="geometry" setFromPoints={points} />
+      <lineBasicMaterial
+        attach="material"
+        color="#00D4FF"
+        transparent
+        opacity={0.6}
+        linewidth={parseFloat(value) > 20 ? 2 : (parseFloat(value) > 5 ? 1.5 : 1)}
+      />
+    </line>
   );
 };
 
@@ -254,7 +248,7 @@ const TransactionGraph: React.FC<TransactionGraphProps> = ({ className }) => {
   
   return (
     <div className={`w-full h-full ${className}`}>
-      <Canvas className="three-canvas" camera={{ position: [0, 0, 7], fov: 50 }}>
+      <Canvas camera={{ position: [0, 0, 7], fov: 50 }}>
         <ambientLight intensity={0.2} />
         <pointLight position={[10, 10, 10]} intensity={0.5} />
         <pointLight position={[-10, -10, -10]} intensity={0.5} />

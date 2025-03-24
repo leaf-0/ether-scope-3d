@@ -64,7 +64,6 @@ const AnimatedPoint = ({ point, radius }: { point: LocationPoint, radius: number
 
 const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
   const lineRef = useRef<THREE.Line>(null);
-  const materialRef = useRef<THREE.LineDashedMaterial>(null);
   
   const { from, to } = flow;
   
@@ -96,30 +95,30 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
   const points = useMemo(() => curve.getPoints(50), [curve]);
   
   useFrame(({ clock }) => {
-    if (materialRef.current) {
-      const time = clock.getElapsedTime();
-      materialRef.current.opacity = (Math.sin(time * 2) * 0.2 + 0.8) * 0.7;
-      materialRef.current.dashSize = 0.3;
-      materialRef.current.gapSize = 0.1;
-      materialRef.current.scale = 1;
-      materialRef.current.needsUpdate = true;
+    if (lineRef.current) {
+      const material = lineRef.current.material as THREE.LineDashedMaterial;
+      if (material) {
+        const time = clock.getElapsedTime();
+        material.opacity = (Math.sin(time * 2) * 0.2 + 0.8) * 0.7;
+        material.dashSize = 0.3;
+        material.gapSize = 0.1;
+        material.needsUpdate = true;
+      }
     }
   });
   
   return (
-    <primitive 
-      object={new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints(points),
-        new THREE.LineDashedMaterial({
-          color: flow.color || "#00ffff",
-          dashSize: 0.3,
-          gapSize: 0.1,
-          opacity: 0.7,
-          transparent: true
-        })
-      )} 
-      ref={lineRef}
-    />
+    <line ref={lineRef}>
+      <bufferGeometry attach="geometry" setFromPoints={points} />
+      <lineDashedMaterial
+        attach="material"
+        color={flow.color || "#00ffff"}
+        dashSize={0.3}
+        gapSize={0.1}
+        opacity={0.7}
+        transparent
+      />
+    </line>
   );
 };
 
@@ -259,7 +258,7 @@ const Globe: React.FC<GlobeProps> = ({
   
   return (
     <div className={`w-full h-full ${className}`}>
-      <Canvas className="three-canvas" camera={{ position: [0, 0, 5], fov: 45 }}>
+      <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
         <ambientLight intensity={0.2} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <pointLight position={[-10, -10, -5]} intensity={0.5} />
