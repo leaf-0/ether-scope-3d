@@ -10,7 +10,7 @@ interface AnimatedFlowProps {
 }
 
 const AnimatedFlow = ({ flow, radius }: AnimatedFlowProps) => {
-  const lineRef = useRef<THREE.Object3D>(null);
+  const groupRef = useRef<THREE.Group>(null);
   
   const { from, to } = flow;
   
@@ -42,9 +42,10 @@ const AnimatedFlow = ({ flow, radius }: AnimatedFlowProps) => {
   const points = useMemo(() => curve.getPoints(50), [curve]);
   
   useFrame(({ clock }) => {
-    if (lineRef.current) {
-      const material = lineRef.current.children[0].material as THREE.LineDashedMaterial;
-      if (material) {
+    if (groupRef.current) {
+      const line = groupRef.current.children[0] as THREE.Line;
+      if (line && line.material) {
+        const material = line.material as THREE.LineDashedMaterial;
         const time = clock.getElapsedTime();
         material.opacity = (Math.sin(time * 2) * 0.2 + 0.8) * 0.7;
         material.dashSize = 0.3;
@@ -55,17 +56,25 @@ const AnimatedFlow = ({ flow, radius }: AnimatedFlowProps) => {
   });
   
   return (
-    <group ref={lineRef}>
-      <primitive object={new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints(points),
-        new THREE.LineDashedMaterial({
-          color: flow.color || "#00ffff",
-          dashSize: 0.3,
-          gapSize: 0.1,
-          opacity: 0.7,
-          transparent: true
-        })
-      )} />
+    <group ref={groupRef}>
+      <line>
+        <bufferGeometry attach="geometry">
+          <bufferAttribute
+            attach="attributes-position"
+            array={new Float32Array(points.flatMap(p => [p.x, p.y, p.z]))}
+            count={points.length}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <lineDashedMaterial
+          attach="material"
+          color={flow.color || "#00ffff"}
+          dashSize={0.3}
+          gapSize={0.1}
+          opacity={0.7}
+          transparent
+        />
+      </line>
     </group>
   );
 };

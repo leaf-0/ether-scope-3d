@@ -28,6 +28,7 @@ const AnimatedPoint = ({ point, radius }: AnimatedPointProps) => {
       const material = meshRef.current.material as THREE.MeshBasicMaterial;
       if (material) {
         material.opacity = 0.6 + 0.4 * pulseRef.current;
+        material.needsUpdate = true;
       }
     }
   });

@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 const StarsBackground = () => {
-  const starsRef = useRef<THREE.Points>(null);
+  const pointsRef = useRef<THREE.Points>(null);
   
   const [starPositions, setStarPositions] = useState<Float32Array | null>(null);
   
@@ -23,15 +23,15 @@ const StarsBackground = () => {
   }, []);
   
   useFrame(({ clock }) => {
-    if (starsRef.current) {
-      starsRef.current.rotation.y = clock.getElapsedTime() * 0.01;
+    if (pointsRef.current) {
+      pointsRef.current.rotation.y = clock.getElapsedTime() * 0.01;
     }
   });
   
   if (!starPositions) return null;
   
   return (
-    <points ref={starsRef}>
+    <points ref={pointsRef}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"

@@ -16,18 +16,22 @@ const SpiderEdge = ({
   value, 
   isHighlighted 
 }: SpiderEdgeProps) => {
-  const lineRef = useRef<THREE.Object3D>(null);
+  const groupRef = useRef<THREE.Group>(null);
   
   useFrame(({ clock }) => {
-    if (lineRef.current) {
-      const material = lineRef.current.children[0].material as THREE.LineBasicMaterial;
-      if (material) {
+    if (groupRef.current) {
+      const line = groupRef.current.children[0] as THREE.Line;
+      if (line && line.material) {
+        const material = line.material as THREE.LineBasicMaterial;
+        
         if (isHighlighted) {
           const pulse = Math.sin(clock.getElapsedTime() * 2) * 0.3 + 0.7;
           material.opacity = pulse;
         } else {
           material.opacity = 0.4;
         }
+        
+        material.needsUpdate = true;
       }
     }
   });
@@ -45,16 +49,24 @@ const SpiderEdge = ({
   }, [fromPos, toPos]);
   
   return (
-    <group ref={lineRef}>
-      <primitive object={new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints(points),
-        new THREE.LineBasicMaterial({
-          color: isHighlighted ? "#00ffff" : "#ffffff",
-          transparent: true,
-          opacity: isHighlighted ? 0.8 : 0.3,
-          linewidth: thickness
-        })
-      )} />
+    <group ref={groupRef}>
+      <line>
+        <bufferGeometry attach="geometry">
+          <bufferAttribute
+            attach="attributes-position"
+            array={new Float32Array(points.flatMap(p => [p.x, p.y, p.z]))}
+            count={points.length}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <lineBasicMaterial
+          attach="material"
+          color={isHighlighted ? "#00ffff" : "#ffffff"}
+          transparent
+          opacity={isHighlighted ? 0.8 : 0.3}
+          linewidth={thickness}
+        />
+      </line>
     </group>
   );
 };

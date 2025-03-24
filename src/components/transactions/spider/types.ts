@@ -1,4 +1,6 @@
 
+import * as THREE from 'three';
+
 export interface NodeData {
   id: string;
   type: string;

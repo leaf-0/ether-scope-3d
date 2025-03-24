@@ -1,15 +1,13 @@
 
+import * as THREE from 'three';
+
 export interface NodeData {
   id: string;
   type: string;
   value: string;
   label: string;
   riskScore: number;
-  position?: {
-    x: number;
-    y: number;
-    z: number;
-  };
+  position?: THREE.Vector3;
 }
 
 export interface EdgeData {
