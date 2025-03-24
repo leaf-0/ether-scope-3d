@@ -110,15 +110,15 @@ const SpiderEdge = ({
   value: string; 
   isHighlighted: boolean;
 }) => {
-  const lineRef = useRef<THREE.Line>(null);
+  const ref = useRef<THREE.Line>(null);
   
   useFrame(({ clock }) => {
-    if (lineRef.current && lineRef.current.material instanceof THREE.LineBasicMaterial) {
+    if (ref.current && ref.current.material instanceof THREE.LineBasicMaterial) {
       if (isHighlighted) {
         const pulse = Math.sin(clock.getElapsedTime() * 2) * 0.3 + 0.7;
-        lineRef.current.material.opacity = pulse;
+        ref.current.material.opacity = pulse;
       } else {
-        lineRef.current.material.opacity = 0.4;
+        ref.current.material.opacity = 0.4;
       }
     }
   });
@@ -135,14 +135,18 @@ const SpiderEdge = ({
   const geometry = new THREE.BufferGeometry().setFromPoints(points);
   
   return (
-    <line ref={lineRef} geometry={geometry}>
-      <lineBasicMaterial 
-        color={isHighlighted ? "#00ffff" : "#ffffff"} 
-        transparent 
-        opacity={isHighlighted ? 0.8 : 0.3} 
-        linewidth={thickness} 
-      />
-    </line>
+    <primitive 
+      object={new THREE.Line(
+        geometry, 
+        new THREE.LineBasicMaterial({ 
+          color: isHighlighted ? "#00ffff" : "#ffffff", 
+          transparent: true, 
+          opacity: isHighlighted ? 0.8 : 0.3, 
+          linewidth: thickness 
+        })
+      )} 
+      ref={ref}
+    />
   );
 };
 

@@ -31,7 +31,6 @@ const AnimatedPoint = ({ point, radius }: { point: LocationPoint, radius: number
   const meshRef = useRef<THREE.Mesh>(null);
   const pulseRef = useRef(0);
   
-  // Convert lat/lon to 3D coordinates
   const phi = (90 - point.lat) * (Math.PI / 180);
   const theta = (point.lon + 180) * (Math.PI / 180);
   
@@ -44,7 +43,6 @@ const AnimatedPoint = ({ point, radius }: { point: LocationPoint, radius: number
       pulseRef.current = Math.sin(clock.getElapsedTime() * 2 + point.size * 10) * 0.2 + 0.8;
       meshRef.current.scale.setScalar(point.size * pulseRef.current);
       
-      // Glow effect
       const material = meshRef.current.material as THREE.MeshBasicMaterial;
       if (material) {
         material.opacity = 0.6 + 0.4 * pulseRef.current;
@@ -70,7 +68,6 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
   
   const { from, to } = flow;
   
-  // Convert lat/lon to 3D coordinates for 'from' point
   const fromPhi = (90 - from.lat) * (Math.PI / 180);
   const fromTheta = (from.lon + 180) * (Math.PI / 180);
   
@@ -78,7 +75,6 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
   const fromZ = radius * Math.sin(fromPhi) * Math.sin(fromTheta);
   const fromY = radius * Math.cos(fromPhi);
   
-  // Convert lat/lon to 3D coordinates for 'to' point
   const toPhi = (90 - to.lat) * (Math.PI / 180);
   const toTheta = (to.lon + 180) * (Math.PI / 180);
   
@@ -86,21 +82,17 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
   const toZ = radius * Math.sin(toPhi) * Math.sin(toTheta);
   const toY = radius * Math.cos(toPhi);
   
-  // Create a curved path between the two points
   const curve = useMemo(() => {
     const fromVec = new THREE.Vector3(fromX, fromY, fromZ);
     const toVec = new THREE.Vector3(toX, toY, toZ);
     
-    // Calculate middle point with some elevation
     const midPoint = new THREE.Vector3().addVectors(fromVec, toVec).multiplyScalar(0.5);
     const midElevation = radius * 0.2 * flow.value;
     midPoint.normalize().multiplyScalar(radius + midElevation);
     
-    // Create a quadratic curve
     return new THREE.QuadraticBezierCurve3(fromVec, midPoint, toVec);
   }, [fromX, fromY, fromZ, toX, toY, toZ, radius, flow.value]);
   
-  // Create points along the curve for the line
   const points = useMemo(() => curve.getPoints(50), [curve]);
   
   useFrame(({ clock }) => {
@@ -115,25 +107,19 @@ const AnimatedFlow = ({ flow, radius }: { flow: FlowLine, radius: number }) => {
   });
   
   return (
-    <line ref={lineRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          array={new Float32Array(points.flatMap(p => [p.x, p.y, p.z]))}
-          count={points.length}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <lineDashedMaterial
-        ref={materialRef}
-        color={flow.color || "#00ffff"}
-        dashSize={0.3}
-        gapSize={0.1}
-        opacity={0.7}
-        transparent
-        linewidth={1}
-      />
-    </line>
+    <primitive 
+      object={new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(points),
+        new THREE.LineDashedMaterial({
+          color: flow.color || "#00ffff",
+          dashSize: 0.3,
+          gapSize: 0.1,
+          opacity: 0.7,
+          transparent: true
+        })
+      )} 
+      ref={lineRef}
+    />
   );
 };
 
@@ -146,7 +132,6 @@ const GlobeObject = ({
 }: GlobeProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
   
-  // Use a textureLoader directly rather than useTexture to avoid the runtime error
   const textureMap = useMemo(() => {
     const loader = new THREE.TextureLoader();
     return loader.load('/earthmap.jpg', undefined, undefined, (error) => {
@@ -174,12 +159,10 @@ const GlobeObject = ({
         />
       </Sphere>
       
-      {/* Add location points */}
       {locations.map((location, i) => (
         <AnimatedPoint key={`point-${i}`} point={location} radius={size} />
       ))}
       
-      {/* Add flow lines */}
       {flows.map((flow, i) => (
         <AnimatedFlow key={`flow-${i}`} flow={flow} radius={size} />
       ))}
@@ -193,7 +176,6 @@ const StarsBackground = () => {
   const [starPositions, setStarPositions] = useState<Float32Array | null>(null);
   
   useEffect(() => {
-    // Generate random stars
     const starsCount = 2000;
     const positions = new Float32Array(starsCount * 3);
     
@@ -238,13 +220,11 @@ const Globe: React.FC<GlobeProps> = ({
   locations = [],
   flows = []
 }) => {
-  // Generate mock data if none provided
   const [mockLocations, setMockLocations] = useState<LocationPoint[]>([]);
   const [mockFlows, setMockFlows] = useState<FlowLine[]>([]);
   
   useEffect(() => {
     if (locations.length === 0) {
-      // Generate random transaction locations
       const randomLocations = Array.from({ length: 30 }, () => ({
         lat: (Math.random() * 180) - 90,
         lon: (Math.random() * 360) - 180,
@@ -255,7 +235,6 @@ const Globe: React.FC<GlobeProps> = ({
       
       setMockLocations(randomLocations);
       
-      // Generate random flows between some locations
       const randomFlows = Array.from({ length: 15 }, () => {
         const fromIndex = Math.floor(Math.random() * randomLocations.length);
         let toIndex = Math.floor(Math.random() * randomLocations.length);

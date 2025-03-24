@@ -101,14 +101,18 @@ const EdgeObject = ({
   const thickness = valueNum > 20 ? 2 : (valueNum > 5 ? 1.5 : 1);
   
   return (
-    <line ref={ref} geometry={lineGeometry}>
-      <lineBasicMaterial 
-        color="#00D4FF" 
-        transparent 
-        opacity={0.6} 
-        linewidth={thickness} 
-      />
-    </line>
+    <primitive 
+      object={new THREE.Line(
+        lineGeometry, 
+        new THREE.LineBasicMaterial({ 
+          color: "#00D4FF", 
+          transparent: true, 
+          opacity: 0.6, 
+          linewidth: thickness 
+        })
+      )} 
+      ref={ref}
+    />
   );
 };
 
