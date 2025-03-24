@@ -1,20 +1,13 @@
 
 /// <reference types="vite/client" />
 
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
+import '@react-three/fiber';
 
-// Type definitions for THREE.Line references in our components
-declare module '@react-three/fiber' {
-  interface ThreeElements {
-    line: React.PropsWithChildren<{
-      geometry?: THREE.BufferGeometry;
-      material?: THREE.Material | THREE.Material[];
-    } & Omit<JSX.IntrinsicElements['mesh'], 'args' | 'material' | 'geometry'> & {
-      args?: any[];
-    }>;
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      // Extend intrinsic elements to support React Three Fiber's custom elements
+      primitive: any;
+    }
   }
 }
